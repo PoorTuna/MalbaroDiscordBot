@@ -6,6 +6,8 @@ from discord.ext import commands
 from scheduler import setup_scheduler
 from config import PropagandaConfig
 from image_generation import generate_poster_image, generate_poster_text
+import pytz
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +71,7 @@ class PropagandaBot(commands.Bot):
 
             # Create detailed user-friendly error messages
             user_message = "An error occurred while processing your command."
-            
+
             error_str = str(error).lower()
             if "invalid_request_error" in error_str or "openai.badrequest" in error_str:
                 user_message = "⚠️ Content Policy Alert: The content couldn't be generated. Please try:\n- Using less controversial themes\n- Avoiding sensitive topics\n- Rewording your prompt"
@@ -257,10 +259,10 @@ class PropagandaBot(commands.Bot):
                 pytz.timezone(timezone)  # Validate timezone
                 self.propaganda_config.timezone = timezone
                 self.propaganda_config.save_config()
-                
+
                 # Reschedule with new timezone
                 setup_scheduler(self)
-                
+
                 await interaction.response.send_message(f"✅ Timezone set to: {timezone}")
             except Exception as e:
                 await interaction.response.send_message(f"❌ Invalid timezone. Example valid timezones: Asia/Jerusalem, Europe/London, US/Eastern")
@@ -307,7 +309,7 @@ class PropagandaBot(commands.Bot):
                 )
                 if test_response.status_code == 401:
                     raise Exception("Invalid API key")
-                
+
                 # If no error, key is valid
                 os.environ['SEGMIND_API_KEY'] = api_key
                 # Save key to file
@@ -328,7 +330,7 @@ class PropagandaBot(commands.Bot):
                 description="I am a bot that generates propaganda-style posters using AI. Here are my commands:",
                 color=discord.Color.blue()
             )
-            
+
             commands = {
                 "generate": "Generate a propaganda poster immediately",
                 "set_channel": "Set the current channel for daily posters",
@@ -341,10 +343,10 @@ class PropagandaBot(commands.Bot):
                 "show_config": "Show the current bot configuration",
                 "help": "Display this help message"
             }
-            
+
             for cmd, desc in commands.items():
                 embed.add_field(name=f"/{cmd}", value=desc, inline=False)
-                
+
             await interaction.response.send_message(embed=embed)
 
         # Try to sync the commands with Discord
@@ -450,3 +452,14 @@ class PropagandaBot(commands.Bot):
                 user_message = f"❌ Error: {str(e)}\nPlease report this if the issue persists."
 
             await channel.send(user_message)
+
+@self.tree.command(
+            name="set_poster_caption",
+            description="Set the caption text for generated posters"
+        )
+        @app_commands.describe(caption="The caption text that accompanies each poster")
+        async def set_poster_caption(interaction: discord.Interaction, caption: str):
+            """Set the poster caption text."""
+            self.propaganda_config.propaganda_prefix = caption
+            self.propaganda_config.save_config()
+            await interaction.response.send_message(f"Poster caption set to: {caption}")
