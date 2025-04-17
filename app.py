@@ -23,7 +23,7 @@ def run_discord_bot():
     global bot_status, bot_instance
     try:
         load_dotenv()
-        required_vars = ['DISCORD_TOKEN', 'OPENAI_API_KEY']
+        required_vars = ['DISCORD_TOKEN', 'SEGMIND_API_KEY']
         missing_vars = [var for var in required_vars if not os.getenv(var)]
 
         if missing_vars:
