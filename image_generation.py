@@ -42,7 +42,7 @@ async def generate_poster_text(prompt):
 async def generate_poster_image(text, theme="motivational", style="soviet propaganda poster style"):
     """Generate a propaganda poster image using Segmind's API."""
     try:
-        api_key = get_segmind_api_key()
+        api_key = get_working_segmind_token()
         if not api_key:
             raise ValueError("Segmind API key not found")
 
