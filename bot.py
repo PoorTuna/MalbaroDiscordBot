@@ -320,39 +320,38 @@ class PropagandaBot(commands.Bot):
         
         try:
             async with channel.typing():
-                # Generate poster text based on the configured prompt
                 # Get text and configuration from propaganda_config
-            text_prompt = self.propaganda_config.text_prompt
-            theme = self.propaganda_config.theme
-            style = self.propaganda_config.style
+                text_prompt = self.propaganda_config.text_prompt
+                theme = self.propaganda_config.theme
+                style = self.propaganda_config.style
 
-            # Generate the poster text
-            poster_text = await generate_poster_text(text_prompt)
-            if not poster_text:
-                raise ValueError("Failed to generate poster text")
+                # Generate the poster text
+                poster_text = await generate_poster_text(text_prompt)
+                if not poster_text:
+                    raise ValueError("Failed to generate poster text")
+                    
+                # Generate the poster image using the text and configuration
+                image_url = await generate_poster_image(
+                    poster_text,
+                    theme=theme,
+                    style=style
+                )
+                if not image_url:
+                    raise ValueError("Failed to generate poster image")
+                    
+                # Create an embed with the poster
+                embed = discord.Embed(
+                    title="Propaganda Poster",
+                    description=poster_text,
+                    color=discord.Color.red()
+                )
+                embed.set_image(url=image_url)
                 
-            # Generate the poster image using the text and configuration
-            image_url = await generate_poster_image(
-                text=poster_text,
-                theme=theme,
-                style=style
-            )
-            if not image_url:
-                raise ValueError("Failed to generate poster image")
-                
-            # Create an embed with the poster
-            embed = discord.Embed(
-                title="Propaganda Poster",
-                description=poster_text,
-                color=discord.Color.red()
-            )
-            embed.set_image(url=image_url)
-                
-            # Send the propaganda poster to the channel
-            await channel.send(embed=embed)
-            logger.info(f"Posted propaganda poster to channel {channel.name}")
+                # Send the propaganda poster to the channel
+                await channel.send(embed=embed)
+                logger.info(f"Posted propaganda poster to channel {channel.name}")
         
         except Exception as e:
             error_msg = f"Error generating propaganda poster: {str(e)}"
             logger.error(error_msg, exc_info=True)
-            await channel.send(f"⚠️ {error_msg}")e}")
+            await channel.send(f"⚠️ {error_msg}")
