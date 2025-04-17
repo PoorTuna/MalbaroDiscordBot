@@ -265,11 +265,11 @@ class PropagandaBot(commands.Bot):
             config = self.propaganda_config
             channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
 
-        @app_commands.command(
+        @self.tree.command(
             name="set_openai_key",
             description="Set the OpenAI API key (use in DM only for security)"
         )
-        async def set_openai_key(self, interaction: discord.Interaction, api_key: str):
+        async def set_openai_key(interaction: discord.Interaction, api_key: str):
             """Set the OpenAI API key."""
             # Only allow this command in DMs
             if not isinstance(interaction.channel, discord.DMChannel):
