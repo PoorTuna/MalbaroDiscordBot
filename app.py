@@ -1,3 +1,4 @@
+
 from flask import Flask, render_template, jsonify
 import threading
 import os
@@ -19,7 +20,7 @@ bot_instance = None
 bot_status = "Not started"
 
 def run_discord_bot():
-    global bot_status
+    global bot_status, bot_instance
     try:
         load_dotenv()
         required_vars = ['DISCORD_TOKEN', 'OPENAI_API_KEY']
@@ -30,7 +31,6 @@ def run_discord_bot():
             bot_status = f"Error: Missing environment variables: {', '.join(missing_vars)}"
             return
 
-        global bot_instance
         bot_instance = PropagandaBot()
         logger.info("Starting Discord propaganda poster bot...")
         bot_status = "Running"
@@ -60,4 +60,7 @@ def get_bot_status():
     return jsonify({"status": bot_status})
 
 if __name__ == "__main__":
+    # Start the bot in a separate thread
     start_bot()
+    # Run Flask app
+    app.run(host='0.0.0.0', port=5000)
