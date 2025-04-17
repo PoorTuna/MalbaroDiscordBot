@@ -68,14 +68,24 @@ class PropagandaBot(commands.Bot):
             """Log errors when processing slash commands."""
             logger.error(f"Error executing slash command: {error}", exc_info=True)
 
-            # Create a more user-friendly error message
-            user_message = "Something went wrong with that command."
+            # Create detailed user-friendly error messages
+            user_message = "An error occurred while processing your command."
+            
+            error_str = str(error).lower()
+            if "invalid_request_error" in error_str or "openai.badrequest" in error_str:
+                user_message = "⚠️ Content Policy Alert: The content couldn't be generated. Please try:\n- Using less controversial themes\n- Avoiding sensitive topics\n- Rewording your prompt"
+            elif "rate limit" in error_str or "429" in error_str:
+                user_message = "⌛ Rate limit reached. Please wait a few minutes before trying again."
+            elif "api key" in error_str or "authentication" in error_str:
+                user_message = "🔑 API Key Error: Please check your OpenAI API key using the /set_openai_key command."
+            elif "timeout" in error_str:
+                user_message = "⏱️ Request timed out. Please try again."
+            else:
+                # Log the unexpected error for debugging
+                logger.error(f"Unexpected error: {error}", exc_info=True)
+                user_message = f"❌ Error: {str(error)}\nPlease report this if the issue persists."
 
-            # Check for specific error types to provide better messages
-            if "invalid_request_error" in str(error).lower() or "openai.badrequest" in str(error).lower():
-                user_message = "The image couldn't be generated. This might be due to content policies. Try a different theme or wording."
-
-            await interaction.response.send_message(f"⚠️ {user_message}", ephemeral=True)
+            await interaction.response.send_message(user_message, ephemeral=True)
 
         # Add listener for slash command invocation
         self.tree.on_error = self.on_app_command_error
@@ -380,11 +390,19 @@ class PropagandaBot(commands.Bot):
             error_msg = f"Error generating propaganda poster: {str(e)}"
             logger.error(error_msg, exc_info=True)
 
-            # Create a more user-friendly error message
-            user_message = "Something went wrong generating the poster."
+            # Create detailed error messages for poster generation
+            error_str = str(e).lower()
+            if "invalid_request_error" in error_str or "openai.badrequest" in error_str:
+                user_message = "⚠️ Content Policy Alert: The poster couldn't be generated. Please try:\n- Using less controversial themes\n- Avoiding sensitive topics\n- Rewording your prompt"
+            elif "rate limit" in error_str or "429" in error_str:
+                user_message = "⌛ Rate limit reached. The bot will try again in a few minutes."
+            elif "api key" in error_str or "authentication" in error_str:
+                user_message = "🔑 API Key Error: Please check your OpenAI API key using the /set_openai_key command."
+            elif "timeout" in error_str:
+                user_message = "⏱️ Request timed out. The bot will try again shortly."
+            else:
+                # Log the unexpected error for debugging
+                logger.error(f"Unexpected error: {e}", exc_info=True)
+                user_message = f"❌ Error: {str(e)}\nPlease report this if the issue persists."
 
-            # Check for specific error types to provide better messages
-            if "invalid_request_error" in str(e).lower() or "openai.badrequest" in str(e).lower():
-                user_message = "The image couldn't be generated. This might be due to content policies. Try a different theme or wording."
-
-            await channel.send(f"⚠️ {user_message}")
+            await channel.send(user_message)
