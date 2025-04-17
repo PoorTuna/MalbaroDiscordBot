@@ -11,10 +11,18 @@ def get_openai_client():
     if not api_key and os.path.exists('openai_key.txt'):
         with open('openai_key.txt', 'r') as f:
             api_key = f.read().strip()
+    os.environ['OPENAI_API_KEY'] = api_key  # Update environment variable
     return OpenAI(api_key=api_key)
 
 # Initialize OpenAI client
-client = get_openai_client()
+client = None  # Will be initialized on first use
+
+def ensure_client():
+    """Ensure client is initialized with latest key"""
+    global client
+    if client is None:
+        client = get_openai_client()
+    return client
 
 async def generate_poster_text(prompt):
     """
@@ -39,7 +47,7 @@ async def generate_poster_text(prompt):
 
 def _generate_text_sync(prompt):
     """Synchronous function for generating text using OpenAI."""
-    response = client.chat.completions.create(
+    response = ensure_client().chat.completions.create(
         # the newest OpenAI model is "gpt-4o" which was released May 13, 2024.
         # do not change this unless explicitly requested by the user
         model="gpt-4o",
@@ -92,7 +100,7 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
 
 def _generate_image_sync(prompt):
     """Synchronous function for generating images using OpenAI."""
-    response = client.images.generate(
+    response = ensure_client().images.generate(
         model="dall-e-3",
         prompt=prompt,
         size="1024x1024",
