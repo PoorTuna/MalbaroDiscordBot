@@ -1,0 +1,4 @@
+
+# Config files with sensitive data
+**/tokens_config.json
+**/propaganda_config.json

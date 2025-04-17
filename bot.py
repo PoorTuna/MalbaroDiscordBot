@@ -27,8 +27,8 @@ class PropagandaBot(commands.Bot):
         self.propaganda_config = PropagandaConfig()
 
         # Load tokens from config file
-        self.tokens_config_path = os.environ.get("TOKEN_CONIFG_PATH", 'tokens_config.json')
-        self.propaganda_config_path = os.environ.get("PROPAGANDA_CONFIG_PATH", 'propaganda_config.json')
+        tokens_config_dir = os.environ.get("TOKEN_CONFIG_DIR", '')
+        self.tokens_config_path = os.path.join(tokens_config_dir, 'tokens_config.json')
 
         try:
             with open(self.tokens_config_path, 'r') as f:

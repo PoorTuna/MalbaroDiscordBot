@@ -13,7 +13,8 @@ class PropagandaConfig:
     def __init__(self):
         """Initialize configuration with default values and load saved config if it exists."""
         # Get config file path from environment variable or use default
-        self.config_file = os.getenv("PROPAGANDA_CONFIG_PATH", self.DEFAULT_CONFIG_FILE)
+        config_dir = os.getenv("PROPAGANDA_CONFIG_DIR", '')
+        self.config_file = os.path.join(config_dir, self.DEFAULT_CONFIG_FILE)
         self.channel_id = None  # Discord channel ID to post propaganda to
         self.hour = 12          # Hour of the day to post
         self.minute = 0         # Minute of the hour to post
