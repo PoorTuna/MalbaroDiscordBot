@@ -21,40 +21,32 @@ def get_working_segmind_token():
     if not tokens:
         raise ValueError("No Segmind tokens found in tokens_config.json")
     
-    # Try the first token
-    token = tokens[0].strip()
-    try:
-        logger.info("Attempting to use primary token...")
-        response = requests.post(
-            "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
-            headers={"x-api-key": token},
-            json={"prompt": "test", "steps": 1}
-        )
-        if response.status_code == 200:
-            return token
-        
-        # If first token fails, try others only for specific error cases
-        if response.status_code in [429, 402, 403]:  # Rate limit or quota exceeded
-            logger.warning(f"Primary token failed with status {response.status_code}, trying backup tokens")
-            for backup_token in tokens[1:]:
-                try:
-                    response = requests.post(
-                        "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
-                        headers={"x-api-key": backup_token.strip()},
-                        json={"prompt": "test", "steps": 1}
-                    )
-                    if response.status_code == 200:
-                        return backup_token.strip()
-                except Exception as e:
-                    logger.warning(f"Backup token failed: {str(e)}")
-                    continue
-                    
-        logger.error(f"Primary token failed with status {response.status_code}: {response.text}")
-        raise ValueError(f"Token error: {response.status_code}")
-        
-    except Exception as e:
-        logger.error(f"Error with primary token: {str(e)}")
-        raise ValueError(f"Token error: {str(e)}")
+    # Try tokens in sequence until one works
+    for token in tokens:
+        token = token.strip()
+        try:
+            logger.info("Attempting to use next token...")
+            response = requests.post(
+                "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
+                headers={"x-api-key": token},
+                json={"prompt": "test", "steps": 1}
+            )
+            
+            if response.status_code == 200:
+                logger.info("Found working token")
+                return token
+                
+            elif response.status_code == 429:  # Rate limit
+                logger.warning(f"Token rate limited (429), trying next token")
+                continue
+                
+            else:
+                logger.warning(f"Token failed with status {response.status_code}: {response.text}")
+                continue
+                
+        except Exception as e:
+            logger.warning(f"Error with token: {str(e)}")
+            continue
     
     raise ValueError("No working Segmind token found - all tokens failed")
 
