@@ -300,36 +300,7 @@ class PropagandaBot(commands.Bot):
 
             await interaction.response.send_message(embed=embed)
 
-        @self.tree.command(
-            name="set_segmind_key",
-            description="Add a Segmind API key (use in DM only for security)"
-        )
-        async def set_segmind_key(interaction: discord.Interaction, api_key: str):
-            """Add a Segmind API key to the rotation."""
-            if not isinstance(interaction.channel, discord.DMChannel):
-                await interaction.response.send_message("⚠️ For security, please use this command in a DM with the bot.", ephemeral=True)
-                return
-
-            try:
-                # Load existing config
-                config = {}
-                if os.path.exists(self.tokens_config_path):
-                    with open(self.tokens_config_path, 'r') as f:
-                        config = json.load(f)
-
-                # Add new token if not already present
-                if 'segmind_tokens' not in config:
-                    config['segmind_tokens'] = []
-                if api_key not in config['segmind_tokens']:
-                    config['segmind_tokens'].append(api_key)
-
-                # Save updated config
-                with open(self.tokens_config_path, 'w') as f:
-                    json.dump(config, f, indent=4)
-
-                await interaction.response.send_message("✅ Segmind API key has been added to the rotation!", ephemeral=True)
-            except Exception as e:
-                await interaction.response.send_message(f"❌ Error adding API key: {str(e)}", ephemeral=True)
+        
 
         @self.tree.command(
             name="set_discord_token",
