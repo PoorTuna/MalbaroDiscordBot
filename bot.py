@@ -260,7 +260,7 @@ class PropagandaBot(commands.Bot):
             name="show_config",
             description="Show current propaganda poster configuration"
         )
-        async def show_config(self, interaction: discord.Interaction):
+        async def show_config(interaction: discord.Interaction):
             """Display the current configuration."""
             config = self.propaganda_config
             channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
