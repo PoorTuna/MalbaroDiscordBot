@@ -67,7 +67,15 @@ class PropagandaBot(commands.Bot):
         async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
             """Log errors when processing slash commands."""
             logger.error(f"Error executing slash command: {error}", exc_info=True)
-            await interaction.response.send_message(f"Error executing command: {error}", ephemeral=True)
+            
+            # Create a more user-friendly error message
+            user_message = "Something went wrong with that command."
+            
+            # Check for specific error types to provide better messages
+            if "invalid_request_error" in str(error).lower() or "openai.badrequest" in str(error).lower():
+                user_message = "The image couldn't be generated. This might be due to content policies. Try a different theme or wording."
+            
+            await interaction.response.send_message(f"⚠️ {user_message}", ephemeral=True)
             
         # Add listener for slash command invocation
         self.tree.on_error = self.on_app_command_error
@@ -75,6 +83,8 @@ class PropagandaBot(commands.Bot):
     async def on_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
         """Handle errors in slash commands."""
         logger.error(f"Error in slash command {interaction.command.name if interaction.command else 'unknown'}: {error}", exc_info=True)
+        
+        # Provide useful error message - already handled by the tree.error decorator above
         
     async def on_app_command(self, interaction: discord.Interaction):
         """Log when slash commands are used."""
@@ -354,4 +364,12 @@ class PropagandaBot(commands.Bot):
         except Exception as e:
             error_msg = f"Error generating propaganda poster: {str(e)}"
             logger.error(error_msg, exc_info=True)
-            await channel.send(f"⚠️ {error_msg}")
+            
+            # Create a more user-friendly error message
+            user_message = "Something went wrong generating the poster."
+            
+            # Check for specific error types to provide better messages
+            if "invalid_request_error" in str(e).lower() or "openai.badrequest" in str(e).lower():
+                user_message = "The image couldn't be generated. This might be due to content policies. Try a different theme or wording."
+            
+            await channel.send(f"⚠️ {user_message}")
