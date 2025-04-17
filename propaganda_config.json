@@ -1,8 +1,11 @@
+
 {
     "channel_id": 553225492296237056,
     "hour": 16,
     "minute": 15,
     "theme": "CS:GO",
     "style": "propaganda poster",
-    "text_prompt": "A propaganda poster, with a textured paper background and a limited color palette of deep red, beige, and tan. Central focus on a stylized figure from CS:GO (S.A.S. character with gas mask and tactical gear). Below the character, in large, bold, all-caps type, the text reads 'PLAY CS2' in a striking, propaganda-style font.".
+    "text_prompt": "A propaganda poster, with a textured paper background and a limited color palette of deep red, beige, and tan. Central focus on a stylized figure from CS:GO (S.A.S. character with gas mask and tactical gear). Below the character, in large, bold, all-caps type, the text reads 'PLAY CS2' in a striking, propaganda-style font",
+    "poster_caption": "A True Malborian Culture Piece:",
+    "timezone": "Asia/Jerusalem"
 }

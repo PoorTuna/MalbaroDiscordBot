@@ -32,15 +32,18 @@ class PropagandaConfig:
         config_path = Path(self.config_file)
         if config_path.exists():
             try:
-                with open(config_path, 'r') as file:
+                with open(config_path, 'r', encoding='utf-8') as file:
                     config_data = json.load(file)
 
                 # Update attributes from loaded config
                 for key, value in config_data.items():
                     if hasattr(self, key):
                         setattr(self, key, value)
+                        logger.info(f"Loaded config value: {key}={value}")
 
-                logger.info("Loaded configuration from file")
+                logger.info("Successfully loaded configuration from file")
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON parsing error in configuration: {e}")
             except Exception as e:
                 logger.error(f"Error loading configuration: {e}")
 
