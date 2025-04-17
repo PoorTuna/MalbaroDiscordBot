@@ -248,6 +248,24 @@ class PropagandaBot(commands.Bot):
             await interaction.response.send_message(f"Text generation prompt set to: {prompt}")
 
         @self.tree.command(
+            name="set_timezone",
+            description="Set the timezone for propaganda poster scheduling"
+        )
+        async def set_timezone(interaction: discord.Interaction, timezone: str):
+            """Set the timezone for scheduling."""
+            try:
+                pytz.timezone(timezone)  # Validate timezone
+                self.propaganda_config.timezone = timezone
+                self.propaganda_config.save_config()
+                
+                # Reschedule with new timezone
+                setup_scheduler(self)
+                
+                await interaction.response.send_message(f"✅ Timezone set to: {timezone}")
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Invalid timezone. Example valid timezones: Asia/Jerusalem, Europe/London, US/Eastern")
+
+        @self.tree.command(
             name="show_config",
             description="Show current propaganda poster configuration"
         )

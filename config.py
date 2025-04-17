@@ -14,8 +14,9 @@ class PropagandaConfig:
         """Initialize configuration with default values and load saved config if it exists."""
         # Default configuration
         self.channel_id = None  # Discord channel ID to post propaganda to
-        self.hour = 12          # Hour of the day to post (UTC)
-        self.minute = 0         # Minute of the hour to post (UTC)
+        self.hour = 12          # Hour of the day to post
+        self.minute = 0         # Minute of the hour to post
+        self.timezone = 'Asia/Jerusalem'  # Timezone for scheduling
         self.theme = "motivational"  # Theme of the propaganda
         self.style = "soviet propaganda poster style"  # Art style of the propaganda
         self.text_prompt = "Generate a short, inspiring slogan for a propaganda poster about technology and progress"
