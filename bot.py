@@ -454,12 +454,12 @@ class PropagandaBot(commands.Bot):
             await channel.send(user_message)
 
 @self.tree.command(
-        name="set_poster_caption",
-        description="Set the caption text for generated posters"
-    )
-    @app_commands.describe(caption="The caption text that accompanies each poster")
-    async def set_poster_caption(interaction: discord.Interaction, caption: str):
-        """Set the poster caption text."""
-        self.propaganda_config.propaganda_prefix = caption
-        self.propaganda_config.save_config()
-        await interaction.response.send_message(f"Poster caption set to: {caption}")
+            name="set_poster_caption",
+            description="Set the caption text for generated posters"
+        )
+        @app_commands.describe(caption="The caption text that accompanies each poster")
+        async def set_poster_caption(interaction: discord.Interaction, caption: str):
+            """Set the poster caption text."""
+            self.propaganda_config.propaganda_prefix = caption
+            self.propaganda_config.save_config()
+            await interaction.response.send_message(f"Poster caption set to: {caption}")
