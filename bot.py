@@ -318,37 +318,34 @@ class PropagandaBot(commands.Bot):
                 await interaction.response.send_message(f"❌ Error testing API key: {str(e)}", ephemeral=True)
 
         @self.tree.command(
-            name="set_openai_key",
-            description="Set the OpenAI API key (use in DM only for security)"
+            name="help",
+            description="Get information about available commands"
         )
-        async def set_openai_key(interaction: discord.Interaction, api_key: str):
-            """Set the OpenAI API key."""
-            # Only allow this command in DMs
-            if not isinstance(interaction.channel, discord.DMChannel):
-                await interaction.response.send_message("⚠️ For security, please use this command in a DM with the bot.", ephemeral=True)
-                return
-
-            import openai
-            # Test the key
-            try:
-                temp_client = openai.OpenAI(api_key=api_key)
-                temp_client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": "test"}],
-                    max_tokens=5
-                )
-                # If no error, key is valid
-                os.environ['OPENAI_API_KEY'] = api_key
-                # Save key to file
-                with open('openai_key.txt', 'w') as f:
-                    f.write(api_key)
-                # Update client
-                from image_generation import get_openai_client
-                global client
-                client = get_openai_client()
-                await interaction.response.send_message("✅ OpenAI API key has been updated and saved successfully!", ephemeral=True)
-            except Exception as e:
-                await interaction.response.send_message(f"❌ Error testing API key: {str(e)}", ephemeral=True)
+        async def help(interaction: discord.Interaction):
+            """Display help information about the bot."""
+            embed = discord.Embed(
+                title="Propaganda Poster Bot - Help",
+                description="I am a bot that generates propaganda-style posters using AI. Here are my commands:",
+                color=discord.Color.blue()
+            )
+            
+            commands = {
+                "generate": "Generate a propaganda poster immediately",
+                "set_channel": "Set the current channel for daily posters",
+                "set_time": "Set the daily posting time (format: HH:MM in UTC)",
+                "set_theme": "Set the theme for propaganda posters",
+                "set_style": "Set the art style for propaganda posters",
+                "set_text_prompt": "Set the text prompt for generating poster text",
+                "set_segmind_key": "Set your Segmind API key (DM only)",
+                "set_timezone": "Set the timezone for propaganda poster scheduling",
+                "show_config": "Show the current bot configuration",
+                "help": "Display this help message"
+            }
+            
+            for cmd, desc in commands.items():
+                embed.add_field(name=f"/{cmd}", value=desc, inline=False)
+                
+            await interaction.response.send_message(embed=embed)
 
         # Try to sync the commands with Discord
         try:
