@@ -5,8 +5,16 @@ from openai import OpenAI
 
 logger = logging.getLogger(__name__)
 
+def get_openai_client():
+    """Get OpenAI client with current API key."""
+    api_key = os.getenv('OPENAI_API_KEY')
+    if not api_key and os.path.exists('openai_key.txt'):
+        with open('openai_key.txt', 'r') as f:
+            api_key = f.read().strip()
+    return OpenAI(api_key=api_key)
+
 # Initialize OpenAI client
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+client = get_openai_client()
 
 async def generate_poster_text(prompt):
     """

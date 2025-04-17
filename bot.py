@@ -297,9 +297,14 @@ class PropagandaBot(commands.Bot):
                 )
                 # If no error, key is valid
                 os.environ['OPENAI_API_KEY'] = api_key
+                # Save key to file
+                with open('openai_key.txt', 'w') as f:
+                    f.write(api_key)
+                # Update client
+                from image_generation import get_openai_client
                 global client
-                client = openai.OpenAI(api_key=api_key)
-                await interaction.response.send_message("✅ OpenAI API key has been updated successfully!", ephemeral=True)
+                client = get_openai_client()
+                await interaction.response.send_message("✅ OpenAI API key has been updated and saved successfully!", ephemeral=True)
             except Exception as e:
                 await interaction.response.send_message(f"❌ Error testing API key: {str(e)}", ephemeral=True)
 
