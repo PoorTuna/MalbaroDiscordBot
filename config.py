@@ -8,11 +8,12 @@ logger = logging.getLogger(__name__)
 class PropagandaConfig:
     """Configuration manager for the propaganda poster bot."""
 
-    CONFIG_FILE = "propaganda_config.json"
+    DEFAULT_CONFIG_FILE = "propaganda_config.json"
 
     def __init__(self):
         """Initialize configuration with default values and load saved config if it exists."""
-        # Default configuration
+        # Get config file path from environment variable or use default
+        self.config_file = os.getenv("PROPAGANDA_CONFIG_PATH", self.DEFAULT_CONFIG_FILE)
         self.channel_id = None  # Discord channel ID to post propaganda to
         self.hour = 12          # Hour of the day to post
         self.minute = 0         # Minute of the hour to post
@@ -27,7 +28,7 @@ class PropagandaConfig:
 
     def load_config(self):
         """Load configuration from file if it exists."""
-        config_path = Path(self.CONFIG_FILE)
+        config_path = Path(self.config_file)
         if config_path.exists():
             try:
                 with open(config_path, 'r') as file:
@@ -55,7 +56,7 @@ class PropagandaConfig:
                 "poster_caption": self.poster_caption
             }
 
-            with open(self.CONFIG_FILE, 'w') as file:
+            with open(self.config_file, 'w') as file:
                 json.dump(config_data, file, indent=4)
 
             logger.info("Saved configuration to file")

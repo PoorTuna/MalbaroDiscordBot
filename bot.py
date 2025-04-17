@@ -27,8 +27,11 @@ class PropagandaBot(commands.Bot):
         self.propaganda_config = PropagandaConfig()
 
         # Load tokens from config file
+        self.tokens_config_path = os.environ.get("TOKEN_CONIFG_PATH", 'tokens_config.json')
+        self.propaganda_config_path = os.environ.get("PROPAGANDA_CONFIG_PATH", 'propaganda_config.json')
+
         try:
-            with open('tokens_config.json', 'r') as f:
+            with open(self.tokens_config_path, 'r') as f:
                 self.tokens_config = json.load(f)
         except FileNotFoundError:
             self.tokens_config = {}
@@ -310,8 +313,8 @@ class PropagandaBot(commands.Bot):
             try:
                 # Load existing config
                 config = {}
-                if os.path.exists('tokens_config.json'):
-                    with open('tokens_config.json', 'r') as f:
+                if os.path.exists(self.tokens_config_path):
+                    with open(self.tokens_config_path, 'r') as f:
                         config = json.load(f)
 
                 # Add new token if not already present
@@ -321,7 +324,7 @@ class PropagandaBot(commands.Bot):
                     config['segmind_tokens'].append(api_key)
 
                 # Save updated config
-                with open('tokens_config.json', 'w') as f:
+                with open(self.tokens_config_path, 'w') as f:
                     json.dump(config, f, indent=4)
 
                 await interaction.response.send_message("✅ Segmind API key has been added to the rotation!", ephemeral=True)
@@ -340,12 +343,12 @@ class PropagandaBot(commands.Bot):
 
             try:
                 config = {}
-                if os.path.exists('tokens_config.json'):
-                    with open('tokens_config.json', 'r') as f:
+                if os.path.exists(self.tokens_config_path):
+                    with open(self.tokens_config_path, 'r') as f:
                         config = json.load(f)
 
                 config['discord_token'] = token
-                with open('tokens_config.json', 'w') as f:
+                with open(self.tokens_config_path, 'w') as f:
                     json.dump(config, f, indent=4)
 
                 await interaction.response.send_message("✅ Discord token has been updated!", ephemeral=True)
