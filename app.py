@@ -51,8 +51,10 @@ def start_bot():
         bot_thread = threading.Thread(target=run_discord_bot)
         bot_thread.daemon = True
         bot_thread.start()
-        return jsonify({"status": "Bot starting"})
-    return jsonify({"status": "Bot already running"})
+        with app.app_context():
+            return jsonify({"status": "Bot starting"})
+    with app.app_context():
+        return jsonify({"status": "Bot already running"})
 
 @app.route('/bot_status')
 def get_bot_status():
