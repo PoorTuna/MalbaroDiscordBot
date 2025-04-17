@@ -53,23 +53,11 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
         )
 
         if response.status_code != 200:
-            raise Exception(f"API request failed with status {response.status_code}: {response.text}")
+            raise Exception(f"API request failed: {response.text}")
 
-        content_type = response.headers.get('content-type', '')
-        if 'image/jpeg' in content_type or 'image/png' in content_type:
-            # Save the image to a temporary file and return its path
-            import tempfile
-            import os
-            
-            temp_dir = tempfile.gettempdir()
-            temp_file = os.path.join(temp_dir, f"poster_{os.urandom(8).hex()}.jpg")
-            
-            with open(temp_file, 'wb') as f:
-                f.write(response.content)
-            
-            return temp_file
-        else:
-            raise Exception(f"Unexpected content type: {content_type}")
+        result = response.json()
+        # The API returns the image URL directly
+        return result.get('image_url')
 
     except Exception as e:
         logger.error(f"Error generating poster image: {e}", exc_info=True)
