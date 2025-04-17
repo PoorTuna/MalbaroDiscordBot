@@ -288,6 +288,36 @@ class PropagandaBot(commands.Bot):
             await interaction.response.send_message(embed=embed)
 
         @self.tree.command(
+            name="set_segmind_key",
+            description="Set the Segmind API key (use in DM only for security)"
+        )
+        async def set_segmind_key(interaction: discord.Interaction, api_key: str):
+            """Set the Segmind API key."""
+            # Only allow this command in DMs
+            if not isinstance(interaction.channel, discord.DMChannel):
+                await interaction.response.send_message("⚠️ For security, please use this command in a DM with the bot.", ephemeral=True)
+                return
+
+            # Test the key with a simple request
+            try:
+                test_response = requests.post(
+                    "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
+                    json={"prompt": "test", "steps": 1},
+                    headers={"x-api-key": api_key}
+                )
+                if test_response.status_code == 401:
+                    raise Exception("Invalid API key")
+                
+                # If no error, key is valid
+                os.environ['SEGMIND_API_KEY'] = api_key
+                # Save key to file
+                with open('segmind_key.txt', 'w') as f:
+                    f.write(api_key)
+                await interaction.response.send_message("✅ Segmind API key has been updated and saved successfully!", ephemeral=True)
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Error testing API key: {str(e)}", ephemeral=True)
+
+        @self.tree.command(
             name="set_openai_key",
             description="Set the OpenAI API key (use in DM only for security)"
         )
