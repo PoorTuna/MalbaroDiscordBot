@@ -21,6 +21,7 @@ def get_working_segmind_token():
     if not tokens:
         raise ValueError("No Segmind tokens found in tokens_config.json")
     
+    logger.info(f"Loaded tokens: {tokens}")
     # Try tokens in sequence until one works
     for token in tokens:
         token = token.strip()
