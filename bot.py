@@ -293,19 +293,6 @@ class PropagandaBot(commands.Bot):
             except Exception as e:
                 await interaction.response.send_message(f"❌ Error testing API key: {str(e)}", ephemeral=True)
 
-
-            embed = discord.Embed(
-                title="Propaganda Poster Configuration",
-                color=discord.Color.red()
-            )
-            embed.add_field(name="Channel", value=channel_mention, inline=False)
-            embed.add_field(name="Post Time (UTC)", value=f"{config.hour:02d}:{config.minute:02d}", inline=True)
-            embed.add_field(name="Theme", value=config.theme, inline=True)
-            embed.add_field(name="Art Style", value=config.style, inline=True)
-            embed.add_field(name="Text Prompt", value=config.text_prompt, inline=False)
-
-            await interaction.response.send_message(embed=embed)
-
         # Try to sync the commands with Discord
         try:
             # Try to find a guild to sync commands to
