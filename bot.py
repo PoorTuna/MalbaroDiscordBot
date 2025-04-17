@@ -207,8 +207,42 @@ class PropagandaBot(commands.Bot):
         
         # Try to sync the commands with Discord
         try:
+            # Try to find a guild to sync commands to
+            guilds = self.guilds
+            if guilds:
+                # Log information about the guilds
+                logger.info(f"Bot is in {len(guilds)} guilds")
+                for guild in guilds:
+                    logger.info(f"Guild: {guild.name} (ID: {guild.id})")
+                    
+                # Try syncing to each guild individually for faster update
+                for guild in guilds:
+                    try:
+                        await self.tree.sync(guild=guild)
+                        logger.info(f"Slash commands synced to guild: {guild.name} (ID: {guild.id})")
+                    except Exception as e:
+                        logger.error(f"Error syncing commands to guild {guild.name}: {e}")
+
+            # Also sync globally (this can take up to an hour to propagate)
             synced = await self.tree.sync()
-            logger.info(f"Slash commands registered and synced with Discord: {len(synced)} commands")
+            logger.info(f"Slash commands registered and synced globally: {len(synced)} commands")
+            
+            # Print invite URL with proper permissions
+            app_id = self.user.id
+            permissions = discord.Permissions(
+                send_messages=True, 
+                embed_links=True, 
+                attach_files=True,
+                use_slash_commands=True,
+                manage_webhooks=True
+            )
+            invite_url = discord.utils.oauth_url(
+                app_id, 
+                permissions=permissions, 
+                scopes=("bot", "applications.commands")
+            )
+            logger.info(f"Invite URL with proper permissions: {invite_url}")
+            
         except Exception as e:
             logger.error(f"Error syncing slash commands: {e}")
             # Continue with regular commands if slash commands fail
