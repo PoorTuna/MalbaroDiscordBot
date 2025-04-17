@@ -22,13 +22,17 @@ bot_status = "Not started"
 def run_discord_bot():
     global bot_status, bot_instance
     try:
-        load_dotenv()
-        required_vars = ['DISCORD_TOKEN', 'SEGMIND_API_KEY']
-        missing_vars = [var for var in required_vars if not os.getenv(var)]
+        if not os.path.exists('tokens_config.json'):
+            logger.error("tokens_config.json not found")
+            bot_status = "Error: tokens_config.json not found"
+            return
 
-        if missing_vars:
-            logger.error(f"Missing required environment variables: {', '.join(missing_vars)}")
-            bot_status = f"Error: Missing environment variables: {', '.join(missing_vars)}"
+        with open('tokens_config.json', 'r') as f:
+            tokens = json.load(f)
+        
+        if not tokens.get('discord_token'):
+            logger.error("Discord token not found in config")
+            bot_status = "Error: Discord token not found in config"
             return
 
         bot_instance = PropagandaBot()

@@ -8,6 +8,7 @@ from config import PropagandaConfig
 from image_generation import generate_poster_image, generate_poster_text
 import pytz
 import requests
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,13 @@ class PropagandaBot(commands.Bot):
 
         # Store bot configuration
         self.propaganda_config = PropagandaConfig()
+
+        # Load tokens from config file
+        try:
+            with open('tokens_config.json', 'r') as f:
+                self.tokens_config = json.load(f)
+        except FileNotFoundError:
+            self.tokens_config = {}
 
         # Register traditional commands for backward compatibility
         self.add_commands()
@@ -291,33 +299,59 @@ class PropagandaBot(commands.Bot):
 
         @self.tree.command(
             name="set_segmind_key",
-            description="Set the Segmind API key (use in DM only for security)"
+            description="Add a Segmind API key (use in DM only for security)"
         )
         async def set_segmind_key(interaction: discord.Interaction, api_key: str):
-            """Set the Segmind API key."""
-            # Only allow this command in DMs
+            """Add a Segmind API key to the rotation."""
             if not isinstance(interaction.channel, discord.DMChannel):
                 await interaction.response.send_message("⚠️ For security, please use this command in a DM with the bot.", ephemeral=True)
                 return
 
-            # Test the key with a simple request
             try:
-                test_response = requests.post(
-                    "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
-                    json={"prompt": "test", "steps": 1},
-                    headers={"x-api-key": api_key}
-                )
-                if test_response.status_code == 401:
-                    raise Exception("Invalid API key")
+                # Load existing config
+                config = {}
+                if os.path.exists('tokens_config.json'):
+                    with open('tokens_config.json', 'r') as f:
+                        config = json.load(f)
 
-                # If no error, key is valid
-                os.environ['SEGMIND_API_KEY'] = api_key
-                # Save key to file
-                with open('segmind_key.txt', 'w') as f:
-                    f.write(api_key)
-                await interaction.response.send_message("✅ Segmind API key has been updated and saved successfully!", ephemeral=True)
+                # Add new token if not already present
+                if 'segmind_tokens' not in config:
+                    config['segmind_tokens'] = []
+                if api_key not in config['segmind_tokens']:
+                    config['segmind_tokens'].append(api_key)
+
+                # Save updated config
+                with open('tokens_config.json', 'w') as f:
+                    json.dump(config, f, indent=4)
+
+                await interaction.response.send_message("✅ Segmind API key has been added to the rotation!", ephemeral=True)
             except Exception as e:
-                await interaction.response.send_message(f"❌ Error testing API key: {str(e)}", ephemeral=True)
+                await interaction.response.send_message(f"❌ Error adding API key: {str(e)}", ephemeral=True)
+
+        @self.tree.command(
+            name="set_discord_token",
+            description="Set the Discord bot token (use in DM only for security)"
+        )
+        async def set_discord_token(interaction: discord.Interaction, token: str):
+            """Set the Discord bot token."""
+            if not isinstance(interaction.channel, discord.DMChannel):
+                await interaction.response.send_message("⚠️ For security, please use this command in a DM with the bot.", ephemeral=True)
+                return
+
+            try:
+                config = {}
+                if os.path.exists('tokens_config.json'):
+                    with open('tokens_config.json', 'r') as f:
+                        config = json.load(f)
+
+                config['discord_token'] = token
+                with open('tokens_config.json', 'w') as f:
+                    json.dump(config, f, indent=4)
+
+                await interaction.response.send_message("✅ Discord token has been updated!", ephemeral=True)
+            except Exception as e:
+                await interaction.response.send_message(f"❌ Error setting Discord token: {str(e)}", ephemeral=True)
+
 
         @self.tree.command(
             name="help",
@@ -338,7 +372,8 @@ class PropagandaBot(commands.Bot):
                 "set_theme": "Set the theme for propaganda posters",
                 "set_style": "Set the art style for propaganda posters",
                 "set_text_prompt": "Set the text prompt for generating poster text",
-                "set_segmind_key": "Set your Segmind API key (DM only)",
+                "set_segmind_key": "Add a Segmind API key (DM only)",
+                "set_discord_token": "Set the Discord bot token (DM only)",
                 "set_timezone": "Set the timezone for propaganda poster scheduling",
                 "show_config": "Show the current bot configuration",
                 "help": "Display this help message"
@@ -424,7 +459,7 @@ class PropagandaBot(commands.Bot):
                 with open(image_url, 'rb') as f:
                     file = discord.File(f, filename='propaganda_poster.png')
                     await channel.send(file=file, content=f"**{self.propaganda_config.poster_caption}**\n{poster_text}")
-                
+
                 # Clean up the temporary file
                 import os
                 try:

@@ -5,19 +5,34 @@ import asyncio
 
 logger = logging.getLogger(__name__)
 
-def get_segmind_api_key():
-    """Get Segmind API key from environment variable."""
-    api_key = os.getenv('SEGMIND_API_KEY')
-    if not api_key and os.path.exists('segmind_key.txt'):
-        with open('segmind_key.txt', 'r') as f:
-            api_key = f.read().strip()
-            if api_key:
-                os.environ['SEGMIND_API_KEY'] = api_key
+def load_tokens():
+    """Load tokens from config file."""
+    try:
+        with open('tokens_config.json', 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Error loading tokens: {e}")
+        return {"discord_token": "", "segmind_tokens": []}
+
+def get_working_segmind_token():
+    """Try each Segmind token until finding a working one."""
+    tokens = load_tokens().get('segmind_tokens', [])
+    if not tokens:
+        raise ValueError("No Segmind tokens found. Please add tokens using /set_segmind_key command")
     
-    if not api_key:
-        raise ValueError("Segmind API key not found. Please set it using /set_segmind_key command")
+    for token in tokens:
+        try:
+            # Test token with a minimal request
+            response = requests.post(
+                "https://api.segmind.com/v1/health",
+                headers={"x-api-key": token.strip()}
+            )
+            if response.status_code == 200:
+                return token.strip()
+        except:
+            continue
     
-    return api_key.strip()  # Ensure no whitespace in key
+    raise ValueError("No working Segmind token found")
 
 async def generate_poster_text(prompt):
     """Generate text for a propaganda poster."""
