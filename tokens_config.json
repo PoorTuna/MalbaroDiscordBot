@@ -1,5 +1,9 @@
-
 {
-    "discord_token": "",
-    "segmind_tokens": []
+   "discord_token":"MTM2MjQ0ODc1NzgxMTMxNDg4MQ.Gp3pJc.t3Abx24JbDoaqmCusN45k_D9R_ToriUiHRlWj0",
+   "segmind_tokens":[
+      "SG_07df780b0313f9ed",
+      "SG_f1dff582d4ee4f97",
+      "SG_89202149acb30eac",
+      "SG_fc0d2df85d81383f"
+   ]
 }
