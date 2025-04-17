@@ -25,6 +25,9 @@ class PropagandaBot(commands.Bot):
         
         # Register traditional commands for backward compatibility
         self.add_commands()
+        
+        # Add event listeners for logging
+        self.add_listeners()
     
     async def setup_hook(self):
         """Called when the bot is starting up."""
@@ -42,6 +45,66 @@ class PropagandaBot(commands.Bot):
     async def on_error(self, event, *args, **kwargs):
         """Handle any uncaught exceptions in the bot."""
         logger.error(f'Error in event {event}', exc_info=True)
+        
+    def add_listeners(self):
+        """Add event listeners for logging command usage."""
+        
+        @self.event
+        async def on_message(message):
+            """Log all messages that could be commands."""
+            # Don't respond to our own messages
+            if message.author == self.user:
+                return
+                
+            # Log potential command messages
+            if message.content.startswith('!'):
+                logger.info(f"Command message received from {message.author} in {message.channel}: {message.content}")
+            
+            # Process commands as usual
+            await self.process_commands(message)
+            
+        @self.tree.error
+        async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
+            """Log errors when processing slash commands."""
+            logger.error(f"Error executing slash command: {error}", exc_info=True)
+            await interaction.response.send_message(f"Error executing command: {error}", ephemeral=True)
+            
+        # Add listener for slash command invocation
+        self.tree.on_error = self.on_app_command_error
+        
+    async def on_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
+        """Handle errors in slash commands."""
+        logger.error(f"Error in slash command {interaction.command.name if interaction.command else 'unknown'}: {error}", exc_info=True)
+        
+    async def on_app_command(self, interaction: discord.Interaction):
+        """Log when slash commands are used."""
+        command_name = interaction.command.name if interaction.command else "unknown"
+        user = interaction.user
+        channel = interaction.channel
+        
+        # Log the interaction
+        logger.info(f"Slash command '{command_name}' used by {user} in {channel}")
+        
+        # Log the parameters if available
+        try:
+            if interaction.namespace:
+                params = ' '.join([f"{k}='{v}'" for k, v in interaction.namespace.__dict__.items()])
+                logger.info(f"Parameters: {params}")
+        except Exception as e:
+            logger.error(f"Error logging slash command parameters: {e}")
+        
+    async def on_command(self, ctx):
+        """Log when regular commands are used."""
+        logger.info(f"Regular command '{ctx.command}' used by {ctx.author} in {ctx.channel}")
+        
+        # Log the command arguments if any
+        if ctx.args and len(ctx.args) > 1:  # First arg is the bot itself
+            args = ' '.join([str(a) for a in ctx.args[1:]])
+            logger.info(f"Arguments: {args}")
+            
+        if ctx.kwargs:
+            kwargs = ' '.join([f"{k}='{v}'" for k, v in ctx.kwargs.items()])
+            logger.info(f"Keyword arguments: {kwargs}")
     
     def add_commands(self):
         """Register traditional prefix commands for backward compatibility."""
@@ -233,7 +296,6 @@ class PropagandaBot(commands.Bot):
                 send_messages=True, 
                 embed_links=True, 
                 attach_files=True,
-                use_slash_commands=True,
                 manage_webhooks=True
             )
             invite_url = discord.utils.oauth_url(
