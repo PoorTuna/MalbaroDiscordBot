@@ -56,13 +56,16 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
         if response.status_code != 200:
             raise Exception(f"API request failed: {response.status_code}")
             
-        if response.headers.get('content-type') == 'image/jpeg':
-            # Return the raw image data in base64 format for discord embed
-            import base64
-            image_data = base64.b64encode(response.content).decode('utf-8')
-            return f"data:image/jpeg;base64,{image_data}"
+        if response.headers.get('content-type') == 'application/json':
+            result = response.json()
+            return result.get('image_url')
         else:
-            # Fallback to JSON response if not image
+            # If we got a direct image response, we need to get a URL instead
+            response = requests.post(
+                "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
+                json=payload,
+                headers=headers
+            )
             result = response.json()
             return result.get('image_url')
 
