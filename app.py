@@ -39,7 +39,7 @@ def run_discord_bot():
         bot_instance = PropagandaBot()
         logger.info("Starting Discord propaganda poster bot...")
         bot_status = "Running"
-        bot_instance.run(os.getenv('DISCORD_TOKEN'))
+        bot_instance.run(tokens['discord_token'])
     except Exception as e:
         logger.error(f"Error running bot: {e}")
         bot_status = f"Error: {str(e)}"
