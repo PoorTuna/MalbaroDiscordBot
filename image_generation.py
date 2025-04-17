@@ -11,8 +11,13 @@ def get_segmind_api_key():
     if not api_key and os.path.exists('segmind_key.txt'):
         with open('segmind_key.txt', 'r') as f:
             api_key = f.read().strip()
-    os.environ['SEGMIND_API_KEY'] = api_key  # Update environment variable
-    return api_key
+            if api_key:
+                os.environ['SEGMIND_API_KEY'] = api_key
+    
+    if not api_key:
+        raise ValueError("Segmind API key not found. Please set it using /set_segmind_key command")
+    
+    return api_key.strip()  # Ensure no whitespace in key
 
 async def generate_poster_text(prompt):
     """Generate text for a propaganda poster."""
