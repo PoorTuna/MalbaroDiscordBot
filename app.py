@@ -47,14 +47,17 @@ def home():
 def start_bot():
     global bot_thread, bot_status
     if bot_thread is None or not bot_thread.is_alive():
-        bot_status = "Starting..."
-        bot_thread = threading.Thread(target=run_discord_bot)
-        bot_thread.daemon = True
-        bot_thread.start()
-        with app.app_context():
+        try:
+            bot_status = "Starting..."
+            bot_thread = threading.Thread(target=run_discord_bot)
+            bot_thread.daemon = True
+            bot_thread.start()
             return jsonify({"status": "Bot starting"})
-    with app.app_context():
-        return jsonify({"status": "Bot already running"})
+        except Exception as e:
+            logger.error(f"Failed to start bot: {e}")
+            bot_status = f"Error: {str(e)}"
+            return jsonify({"status": bot_status}), 500
+    return jsonify({"status": "Bot already running"})
 
 @app.route('/bot_status')
 def get_bot_status():
@@ -62,7 +65,11 @@ def get_bot_status():
     return jsonify({"status": bot_status})
 
 if __name__ == "__main__":
-    # Start the bot in a separate thread
-    start_bot()
+    if not os.getenv('DISCORD_TOKEN'):
+        logger.error("Discord token not found. Please set DISCORD_TOKEN environment variable.")
+        bot_status = "Error: Discord token not found"
+    else:
+        # Start the bot in a separate thread
+        start_bot()
     # Run Flask app
     app.run(host='0.0.0.0', port=5000)
