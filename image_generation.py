@@ -55,22 +55,15 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
         if response.status_code != 200:
             raise Exception(f"API request failed: {response.status_code}")
 
-        result = response.json()
-        if not result.get('image_url'):
-            raise Exception("No image URL in response")
-
-        # Download the image
-        img_response = requests.get(result['image_url'])
-        if img_response.status_code != 200:
-            raise Exception("Failed to download image")
-
-        # Save temporarily
-        import os
-        temp_path = f"temp_poster_{os.getpid()}.png"
-        with open(temp_path, 'wb') as f:
-            f.write(img_response.content)
-
-        return temp_path
+        # Handle direct image response
+        if response.headers.get('content-type') == 'image/jpeg':
+            # Save temporarily
+            temp_path = f"temp_poster_{os.getpid()}.jpeg" #changed to .jpeg
+            with open(temp_path, 'wb') as f:
+                f.write(response.content)
+            return temp_path
+        else:
+            raise Exception("Expected image/jpeg response from API")
 
     except Exception as e:
         logger.error(f"Error generating poster image: {e}", exc_info=True)
