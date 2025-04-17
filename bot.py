@@ -274,6 +274,19 @@ class PropagandaBot(commands.Bot):
             config = self.propaganda_config
             channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
 
+            embed = discord.Embed(
+                title="Propaganda Poster Configuration",
+                color=discord.Color.red()
+            )
+            embed.add_field(name="Channel", value=channel_mention, inline=False)
+            embed.add_field(name="Post Time (UTC)", value=f"{config.hour:02d}:{config.minute:02d}", inline=True)
+            embed.add_field(name="Theme", value=config.theme, inline=True)
+            embed.add_field(name="Art Style", value=config.style, inline=True)
+            embed.add_field(name="Text Prompt", value=config.text_prompt, inline=False)
+            embed.add_field(name="Timezone", value=config.timezone, inline=True)
+
+            await interaction.response.send_message(embed=embed)
+
         @self.tree.command(
             name="set_openai_key",
             description="Set the OpenAI API key (use in DM only for security)"
