@@ -90,28 +90,10 @@ class PropagandaBot(commands.Bot):
         # Add listener for slash command invocation
         self.tree.on_error = self.on_app_command_error
 
-    async def on_app_command_error(self, interaction: discord.Interaction, error: app_commands.AppCommandError):
-        """Handle errors in slash commands."""
-        logger.error(f"Error in slash command {interaction.command.name if interaction.command else 'unknown'}: {error}", exc_info=True)
-
-        # Provide useful error message - already handled by the tree.error decorator above
-
     async def on_app_command(self, interaction: discord.Interaction):
         """Log when slash commands are used."""
         command_name = interaction.command.name if interaction.command else "unknown"
-        user = interaction.user
-        channel = interaction.channel
-
-        # Log the interaction
-        logger.info(f"Slash command '{command_name}' used by {user} in {channel}")
-
-        # Log the parameters if available
-        try:
-            if interaction.namespace:
-                params = ' '.join([f"{k}='{v}'" for k, v in interaction.namespace.__dict__.items()])
-                logger.info(f"Parameters: {params}")
-        except Exception as e:
-            logger.error(f"Error logging slash command parameters: {e}")
+        logger.info(f"Slash command '{command_name}' used by {interaction.user} in {interaction.channel}")
 
     async def on_command(self, ctx):
         """Log when regular commands are used."""

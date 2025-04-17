@@ -1,7 +1,7 @@
 import os
 import logging
-import asyncio
 from openai import OpenAI
+import asyncio
 
 logger = logging.getLogger(__name__)
 
