@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Propaganda Poster Bot</title>
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .bot-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body data-bs-theme="dark">
+    <div class="container">
+        <div class="row mt-4">
+            <div class="col-md-8 offset-md-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h1 class="text-center">Discord Propaganda Poster Bot</h1>
+                    </div>
+                    <div class="card-body">
+                        <p class="lead">This bot generates propaganda-style posters using OpenAI's GPT-4o and DALL-E models, and posts them to your Discord server.</p>
+                        
+                        <div class="alert alert-info">
+                            <h5>Bot Commands:</h5>
+                            <ul>
+                                <li><code>!generate</code> - Generate a propaganda poster immediately</li>
+                                <li><code>!set_channel</code> - Set the current channel for daily posters</li>
+                                <li><code>!set_time</code> - Set the daily posting time (format: HH:MM in UTC)</li>
+                                <li><code>!set_theme</code> - Set the theme for propaganda posters</li>
+                                <li><code>!set_style</code> - Set the art style for propaganda posters</li>
+                                <li><code>!set_text_prompt</code> - Set the text prompt for generating poster text</li>
+                                <li><code>!show_config</code> - Show the current bot configuration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button id="startBot" class="btn btn-primary">Start Bot</button>
+                        </div>
+                        
+                        <div id="botStatus" class="bot-status alert alert-secondary mt-4">
+                            Bot Status: <span id="statusText">Not started</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.getElementById('startBot').addEventListener('click', function() {
+            fetch('/start_bot', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('statusText').textContent = data.status;
+                checkBotStatus();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+        
+        function checkBotStatus() {
+            fetch('/bot_status')
+            .then(response => response.json())
+            .then(data => {
+                const statusText = document.getElementById('statusText');
+                statusText.textContent = data.status;
+                
+                const statusDiv = document.getElementById('botStatus');
+                if (data.status === 'Running') {
+                    statusDiv.className = 'bot-status alert alert-success';
+                } else if (data.status.startsWith('Error')) {
+                    statusDiv.className = 'bot-status alert alert-danger';
+                } else if (data.status === 'Starting...') {
+                    statusDiv.className = 'bot-status alert alert-info';
+                } else {
+                    statusDiv.className = 'bot-status alert alert-secondary';
+                }
+                
+                // Continue checking status every 2 seconds if the bot is starting
+                if (data.status === 'Starting...') {
+                    setTimeout(checkBotStatus, 2000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        // Check initial status
+        checkBotStatus();
+    </script>
+</body>
+</html>
+        
