@@ -16,24 +16,47 @@ def load_tokens():
         return {"discord_token": "", "segmind_tokens": []}
 
 def get_working_segmind_token():
-    """Try each Segmind token until finding a working one."""
+    """Get a working Segmind token, trying others only if the first fails."""
     tokens = load_tokens().get('segmind_tokens', [])
     if not tokens:
-        raise ValueError("No Segmind tokens found. Please add tokens using /set_segmind_key command")
+        raise ValueError("No Segmind tokens found in tokens_config.json")
     
-    for token in tokens:
-        try:
-            # Test token with a minimal request
-            response = requests.post(
-                "https://api.segmind.com/v1/health",
-                headers={"x-api-key": token.strip()}
-            )
-            if response.status_code == 200:
-                return token.strip()
-        except:
-            continue
+    # Try the first token
+    token = tokens[0].strip()
+    try:
+        logger.info("Attempting to use primary token...")
+        response = requests.post(
+            "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
+            headers={"x-api-key": token},
+            json={"prompt": "test", "steps": 1}
+        )
+        if response.status_code == 200:
+            return token
+        
+        # If first token fails, try others only for specific error cases
+        if response.status_code in [429, 402, 403]:  # Rate limit or quota exceeded
+            logger.warning(f"Primary token failed with status {response.status_code}, trying backup tokens")
+            for backup_token in tokens[1:]:
+                try:
+                    response = requests.post(
+                        "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
+                        headers={"x-api-key": backup_token.strip()},
+                        json={"prompt": "test", "steps": 1}
+                    )
+                    if response.status_code == 200:
+                        return backup_token.strip()
+                except Exception as e:
+                    logger.warning(f"Backup token failed: {str(e)}")
+                    continue
+                    
+        logger.error(f"Primary token failed with status {response.status_code}: {response.text}")
+        raise ValueError(f"Token error: {response.status_code}")
+        
+    except Exception as e:
+        logger.error(f"Error with primary token: {str(e)}")
+        raise ValueError(f"Token error: {str(e)}")
     
-    raise ValueError("No working Segmind token found")
+    raise ValueError("No working Segmind token found - all tokens failed")
 
 async def generate_poster_text(prompt):
     """Generate text for a propaganda poster."""
