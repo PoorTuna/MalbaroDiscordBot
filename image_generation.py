@@ -48,30 +48,29 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
             lambda: requests.post(
                 "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
                 json=payload,
-                headers=headers,
-                stream=True
+                headers=headers
             )
         )
 
         if response.status_code != 200:
             raise Exception(f"API request failed: {response.status_code}")
 
-        # Always try to get JSON response first
-        try:
-            result = response.json()
-            if 'image_url' in result:
-                return result['image_url']
-        except:
-            pass
-
-        # If not JSON or no image_url, make a new request without stream=True
-        response = requests.post(
-            "https://api.segmind.com/v1/stable-diffusion-3.5-turbo-txt2img",
-            json=payload,
-            headers=headers
-        )
         result = response.json()
-        return result.get('image_url')
+        if not result.get('image_url'):
+            raise Exception("No image URL in response")
+
+        # Download the image
+        img_response = requests.get(result['image_url'])
+        if img_response.status_code != 200:
+            raise Exception("Failed to download image")
+
+        # Save temporarily
+        import os
+        temp_path = f"temp_poster_{os.getpid()}.png"
+        with open(temp_path, 'wb') as f:
+            f.write(img_response.content)
+
+        return temp_path
 
     except Exception as e:
         logger.error(f"Error generating poster image: {e}", exc_info=True)

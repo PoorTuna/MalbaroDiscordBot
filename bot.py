@@ -420,16 +420,17 @@ class PropagandaBot(commands.Bot):
                 if not image_url:
                     raise ValueError("Failed to generate poster image")
 
-                # Create an embed with the poster
-                embed = discord.Embed(
-                    title="Propaganda Poster",
-                    description=poster_text,
-                    color=discord.Color.red()
-                )
-                embed.set_image(url=image_url)
-
-                # Send the propaganda poster to the channel
-                await channel.send(embed=embed)
+                # Create message with the poster
+                with open(image_url, 'rb') as f:
+                    file = discord.File(f, filename='propaganda_poster.png')
+                    await channel.send(file=file, content=f"**{self.propaganda_config.poster_caption}**\n{poster_text}")
+                
+                # Clean up the temporary file
+                import os
+                try:
+                    os.remove(image_url)
+                except Exception as e:
+                    logger.warning(f"Failed to delete temporary file: {e}")
                 logger.info(f"Posted propaganda poster to channel {channel.name}")
 
         except Exception as e:
