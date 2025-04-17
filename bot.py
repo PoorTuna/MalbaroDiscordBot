@@ -63,7 +63,6 @@ class PropagandaBot(commands.Bot):
             # Process commands as usual
             await self.process_commands(message)
 
-        @self.tree.error
         async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
             """Log errors when processing slash commands."""
             logger.error(f"Error executing slash command: {error}", exc_info=True)
@@ -87,8 +86,8 @@ class PropagandaBot(commands.Bot):
 
             await interaction.response.send_message(user_message, ephemeral=True)
 
-        # Add listener for slash command invocation
-        self.tree.on_error = self.on_app_command_error
+        # Set the error handler
+        self.tree.on_error = on_app_command_error
 
     async def on_app_command(self, interaction: discord.Interaction):
         """Log when slash commands are used."""
