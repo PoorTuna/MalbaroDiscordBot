@@ -15,10 +15,10 @@ class MusicPlayer:
         self.playlist.append(url)
 
     async def join_and_play(self,
-                            interaction: discord.Interaction,
+                            interaction: discord.Interaction = None,
                             url: str = None,
                             force_voice_channel: bool = False):
-        if not force_voice_channel and (not interaction.user or not interaction.user.voice):
+        if not force_voice_channel and interaction and (not interaction.user or not interaction.user.voice):
             await interaction.followup.send(
                 "You must be in a voice channel to use this command!")
             return

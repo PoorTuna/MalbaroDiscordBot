@@ -72,17 +72,18 @@ async def generate_daily_content(bot):
         await bot.generate_and_post_poster(channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
 
-        # Get voice channel ID from config
-        voice_channel_id = bot.propaganda_config.voice_channel_id
-        voice_channel = bot.get_channel(voice_channel_id)
-        
-        # Get playlist URL from config
+        # Get voice channel and playlist URL from config
+        voice_channel = bot.get_channel(bot.propaganda_config.voice_channel_id)
         playlist_url = bot.propaganda_config.youtube_playlist_url
         
         if voice_channel and playlist_url:
-            mock_interaction = MockInteraction(channel, voice_channel)
             try:
-                await bot.music_player.join_and_play(mock_interaction, playlist_url, force_voice_channel=True)
+                # Connect to voice channel directly
+                voice_client = await voice_channel.connect()
+                bot.music_player.voice_clients[voice_channel.guild.id] = voice_client
+                
+                # Play random song from playlist
+                await bot.music_player.join_and_play(None, playlist_url, force_voice_channel=True)
                 logger.info(f"Successfully started playing music in voice channel {voice_channel.name}")
             except Exception as e:
                 logger.error(f"Error playing music: {e}")
