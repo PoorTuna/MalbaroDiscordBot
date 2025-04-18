@@ -7,7 +7,6 @@ from scheduler import setup_scheduler
 from config import PropagandaConfig
 from image_generation import generate_poster_image, generate_poster_text
 import pytz
-import requests
 import json
 
 logger = logging.getLogger(__name__)
@@ -140,8 +139,8 @@ class PropagandaBot(commands.Bot):
                 "Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC)."
             )
 
-    
 
+    
     async def register_commands(self):
         """Register all bot slash commands."""
         # Create a command tree
