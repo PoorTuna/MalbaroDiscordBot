@@ -25,7 +25,7 @@ class PropagandaBot(commands.Bot):
         from music import MusicPlayer
         self.music_player = MusicPlayer()
 
-        super().__init__(command_prefix=None, intents=intents)
+        super().__init__(command_prefix="/", intents=intents)
 
         self.tree.clear_commands(guild=None)
         logger.info("Cleared all existing commands")
@@ -125,10 +125,10 @@ class PropagandaBot(commands.Bot):
             try:
                 hour, minute = map(int, time.split(':'))
                 if 0 <= hour < 24 and 0 <= minute < 60:
-                    self.propaganda_config.propaganda_scheduler[
-                        "time"]["hour"] = hour
-                    self.propaganda_config.propaganda_scheduler[
-                        "time"]["minute"] = minute
+                    self.propaganda_config.propaganda_scheduler["time"][
+                        "hour"] = hour
+                    self.propaganda_config.propaganda_scheduler["time"][
+                        "minute"] = minute
                     await interaction.response.send_message(
                         f"Post time set to {time}")
                 else:
@@ -156,7 +156,8 @@ class PropagandaBot(commands.Bot):
                            description="Show current configuration")
         async def show_config(interaction: discord.Interaction):
             config = self.propaganda_config
-            channel_mention = f"<#{config.propaganda_scheduler['poster_output_channel_id']}>" if config.propaganda_scheduler.get('poster_output_channel_id') else "Not set"
+            channel_mention = f"<#{config.propaganda_scheduler['poster_output_channel_id']}>" if config.propaganda_scheduler.get(
+                'poster_output_channel_id') else "Not set"
 
             # Truncate text prompt if too long
             text_prompt = config.text_prompt
@@ -169,7 +170,7 @@ class PropagandaBot(commands.Bot):
             embed.add_field(
                 name="Post Time",
                 value=
-                f"{config.propaganda_scheduler['time']['hour']:02d}:{config.propaganda_scheduler['time']['minute']:02d} {config.timezone}",
+                f"{config.propaganda_scheduler['time']['hour']:02d}:{config.propaganda_scheduler['time']['minute']:02d} {config.propaganda_scheduler['timezone']}",
                 inline=True)
             embed.add_field(name="Text Prompt",
                             value=text_prompt,
@@ -183,7 +184,7 @@ class PropagandaBot(commands.Bot):
         logger.info('------')
         # Set up the scheduled task for daily poster generation
         setup_scheduler(self)
-        
+
         # Start Steam monitoring
         from steam_monitor import SteamMonitor
         self.steam_monitor = SteamMonitor(self)
@@ -267,10 +268,10 @@ class PropagandaBot(commands.Bot):
         try:
             hour, minute = map(int, time_str.split(':'))
             if 0 <= hour < 24 and 0 <= minute < 60:
-                self.propaganda_config.propaganda_scheduler[
-                    "time"]["hour"] = hour
-                self.propaganda_config.propaganda_scheduler[
-                    "time"]["minute"] = minute
+                self.propaganda_config.propaganda_scheduler["time"][
+                    "hour"] = hour
+                self.propaganda_config.propaganda_scheduler["time"][
+                    "minute"] = minute
                 await response_handler(
                     f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.timezone}."
                 )
