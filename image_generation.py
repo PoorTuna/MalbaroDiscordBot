@@ -1,11 +1,12 @@
+
 import os
 import logging
 import requests
 import asyncio
 import json
+import time
 
 logger = logging.getLogger(__name__)
-
 
 def load_tokens():
     """Load tokens from config file."""
@@ -14,76 +15,88 @@ def load_tokens():
             return json.load(f)
     except Exception as e:
         logger.error(f"Error loading tokens: {e}")
-        return {"discord_token": "", "segmind_tokens": []}
-
+        return {"discord_token": "", "wavespeed_api_key": ""}
 
 async def generate_poster_text(prompt):
     """Generate text for a propaganda poster."""
-    # For now, just return the prompt as-is since we're focusing on image generation
     return prompt.strip()
 
-
-async def generate_poster_image(text,
-                                theme="motivational",
-                                style="soviet propaganda poster style"):
-    """Generate a propaganda poster image using Segmind's API."""
+async def generate_poster_image(text, theme="motivational", style="soviet propaganda poster style"):
+    """Generate a propaganda poster image using WaveSpeed API."""
     try:
-        tokens = load_tokens().get('segmind_tokens', [])
-        if not tokens:
-            raise ValueError("No Segmind tokens found")
+        tokens = load_tokens()
+        api_key = tokens.get('wavespeed_api_key')
+        if not api_key:
+            raise ValueError("No WaveSpeed API key found")
 
-        last_error = None
-        for token in tokens:
-            try:
-                # Construct the prompt
-                prompt = f"Generate a {style} poster. have a text saying '{text}' incorporated artistically. Theme: {theme}"
+        # Step 1: Create image generation request
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}"
+        }
 
-                payload = {
-                    "prompt": prompt,
-                    "steps": 20,
-                    "seed": 1184522,
-                    "aspect_ratio": "2:3",
-                    "base64": False
-                }
+        prompt = f"A {style} poster. {text}. Theme: {theme}"
+        data = {
+            "enable_base64_output": True,
+            "enable_safety_checker": True,
+            "prompt": prompt,
+            "seed": -1,
+            "size": "768*1152"
+        }
 
-                headers = {"x-api-key": token.strip()}
+        response = await asyncio.get_event_loop().run_in_executor(
+            None,
+            lambda: requests.post(
+                'https://api.wavespeed.ai/api/v2/wavespeed-ai/hidream-i1-full',
+                headers=headers,
+                json=data
+            )
+        )
 
-                # Run the API call in a thread pool to avoid blocking
-                loop = asyncio.get_event_loop()
-                response = await loop.run_in_executor(
-                    None, lambda: requests.post(
-                        "https://api.segmind.com/v1/stable-diffusion-3.5-large-txt2img",
-                        json=payload,
-                        headers=headers))
+        if response.status_code != 200:
+            raise Exception(f"Failed to create image: {response.text}")
 
-                if response.status_code == 200:
-                    logger.info(
-                        f"Successfully generated image with token ending in ...{token[-4:]}"
-                    )
-                    # Handle direct image response
-                    if response.headers.get('content-type') == 'image/jpeg':
-                        # Save temporarily
-                        temp_path = f"temp_poster_{os.getpid()}.jpeg"
-                        with open(temp_path, 'wb') as f:
-                            f.write(response.content)
-                        return temp_path
-                    else:
-                        raise Exception(
-                            "Expected image/jpeg response from API")
-                elif response.status_code == 429:
-                    logger.warning(
-                        f"Token ...{token[-4:]} is rate limited, trying next token"
-                    )
-                    continue
-                else:
-                    last_error = f"API request failed: {response.status_code}"
-                    continue
+        result = response.json()
+        result_url = result['data']['urls']['get']
 
-            except Exception as e:
-                last_error = str(e)
-                continue
+        # Step 2: Poll for completion and get final image URL
+        max_attempts = 30
+        attempt = 0
+        while attempt < max_attempts:
+            result_response = await asyncio.get_event_loop().run_in_executor(
+                None,
+                lambda: requests.get(result_url, headers=headers)
+            )
+            
+            if result_response.status_code != 200:
+                raise Exception(f"Failed to get result: {result_response.text}")
 
-        raise Exception(f"All tokens failed. Last error: {last_error}")
+            result_data = result_response.json()
+            if result_data['data']['status'] == 'completed':
+                image_url = result_data['data']['outputs'][0]
+                
+                # Download the image
+                image_response = await asyncio.get_event_loop().run_in_executor(
+                    None,
+                    lambda: requests.get(image_url)
+                )
+                
+                if image_response.status_code != 200:
+                    raise Exception("Failed to download generated image")
+
+                # Save temporarily
+                temp_path = f"temp_poster_{os.getpid()}.jpg"
+                with open(temp_path, 'wb') as f:
+                    f.write(image_response.content)
+                return temp_path
+
+            if result_data['data']['status'] == 'failed':
+                raise Exception(f"Image generation failed: {result_data['data'].get('error', 'Unknown error')}")
+
+            attempt += 1
+            await asyncio.sleep(1)
+
+        raise Exception("Timeout waiting for image generation")
 
     except Exception as e:
         logger.error(f"Error generating poster image: {e}", exc_info=True)
