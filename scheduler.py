@@ -32,13 +32,15 @@ def setup_scheduler(bot):
     timezone = pytz.timezone(bot.propaganda_config.timezone)
     
     # Schedule the daily content generation task
+    scheduler.configure(timezone=timezone)  # Set scheduler default timezone
     scheduler.add_job(
         generate_daily_content,
         CronTrigger(hour=hour, minute=minute, timezone=timezone),
         args=[bot],
         id='daily_content',
         replace_existing=True,
-        misfire_grace_time=None  # Always run missed jobs
+        misfire_grace_time=None,  # Always run missed jobs
+        coalesce=True  # Combine missed executions into a single one
     )
     
     # Start the scheduler
