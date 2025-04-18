@@ -55,7 +55,8 @@ class PropagandaConfig:
                 "minute": self.minute,
                 "timezone": self.timezone,
                 "text_prompt": self.text_prompt,
-                "poster_caption": self.poster_caption
+                "poster_caption": self.poster_caption,
+                "max_retries": self.max_retries
             }
 
             with open(self.config_file, 'w') as file:
