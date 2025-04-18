@@ -84,8 +84,8 @@ async def generate_daily_content(bot):
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
 
         # Get voice channel and playlist URL from config
-        voice_channel = bot.get_channel(bot.propaganda_config.voice_channel_id)
-        playlist_url = bot.propaganda_config.youtube_playlist_url
+        voice_channel = bot.get_channel(bot.propaganda_config.propaganda_scheduler["voice_channel_id"])
+        playlist_url = bot.propaganda_config.propaganda_scheduler["youtube_playlist_url"]
 
         if voice_channel and playlist_url:
             try:
