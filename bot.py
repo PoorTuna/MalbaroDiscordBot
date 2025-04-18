@@ -85,6 +85,18 @@ class PropagandaBot(commands.Bot):
             self.propaganda_config.set_text_prompt(prompt)
             await interaction.response.send_message("Text generation prompt updated.")
 
+        @self.tree.command(name="show_config", description="Show current configuration")
+        async def show_config(interaction: discord.Interaction):
+            config = self.propaganda_config
+            channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
+            
+            embed = discord.Embed(title="Propaganda Poster Configuration", color=discord.Color.blue())
+            embed.add_field(name="Channel", value=channel_mention, inline=True)
+            embed.add_field(name="Post Time", value=f"{config.hour:02d}:{config.minute:02d} {config.timezone}", inline=True)
+            embed.add_field(name="Text Prompt", value=config.text_prompt, inline=False)
+            
+            await interaction.response.send_message(embed=embed)
+
         await self.tree.sync()
         logger.info("Commands synced with Discord")
 
