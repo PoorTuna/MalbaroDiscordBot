@@ -311,6 +311,34 @@ class PropagandaBot(commands.Bot):
             description="Get information about available commands"
         )
         @self.tree.command(
+            name="help",
+            description="Get information about available commands"
+        )
+        async def help(interaction: discord.Interaction):
+            """Display help information about the bot."""
+            embed = discord.Embed(
+                title="Propaganda Poster Bot - Help",
+                description="I am a bot that generates propaganda-style posters using AI. Here are my commands:",
+                color=discord.Color.blue()
+            )
+
+            commands = {
+                "generate": "Generate a propaganda poster immediately",
+                "set_channel": "Set the current channel for daily posters",
+                "set_time": "Set the daily posting time (format: HH:MM in UTC)",
+                "set_text_prompt": "Set the text prompt for generating poster text",
+                "set_discord_token": "Set the Discord bot token (DM only)",
+                "set_timezone": "Set the timezone for propaganda poster scheduling",
+                "show_config": "Show the current bot configuration",
+                "help": "Display this help message"
+            }
+
+            for cmd, desc in commands.items():
+                embed.add_field(name=f"/{cmd}", value=desc, inline=False)
+
+            await interaction.response.send_message(embed=embed)
+
+        @self.tree.command(
             name="play",
             description="Play a random song from the configured playlist"
         )
