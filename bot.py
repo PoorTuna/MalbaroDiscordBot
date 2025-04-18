@@ -140,7 +140,7 @@ class PropagandaBot(commands.Bot):
             )
 
 
-    
+
     async def register_commands(self):
         """Register all bot slash commands."""
         # Create a command tree
@@ -338,9 +338,9 @@ class PropagandaBot(commands.Bot):
                 # Try syncing to each guild individually for faster update
                 for guild in guilds:
                     try:
-                        await self.tree.sync(guild=guild)
+                        commands = await self.tree.sync(guild=guild)
                         logger.info(
-                            f"Slash commands synced to guild: {guild.name} (ID: {guild.id})"
+                            f"Slash commands synced to guild: {guild.name} (ID: {guild.id}), {len(commands)} commands"
                         )
                     except Exception as e:
                         logger.error(
@@ -348,9 +348,9 @@ class PropagandaBot(commands.Bot):
                         )
 
             # Also sync globally (this can take up to an hour to propagate)
-            synced = await self.tree.sync()
+            global_commands = await self.tree.sync()
             logger.info(
-                f"Slash commands registered and synced globally: {len(synced)} commands"
+                f"Slash commands registered and synced globally: {len(global_commands)} commands"
             )
 
             # Print invite URL with proper permissions
