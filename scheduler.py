@@ -14,7 +14,15 @@ def setup_scheduler(bot):
     Args:
         bot: The Discord bot instance
     """
+    # Create new scheduler and shutdown any existing ones
+    try:
+        if hasattr(setup_scheduler, 'current_scheduler'):
+            setup_scheduler.current_scheduler.shutdown()
+    except Exception:
+        pass
+        
     scheduler = AsyncIOScheduler()
+    setup_scheduler.current_scheduler = scheduler
     
     # Get the configured time and timezone from the bot's propaganda_config
     hour = bot.propaganda_config.hour
