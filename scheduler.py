@@ -75,8 +75,13 @@ async def generate_daily_content(bot):
         # Get configured voice channel
         voice_channel = bot.get_channel(bot.propaganda_config.voice_channel_id)
         if voice_channel:
-            mock_interaction = MockInteraction(channel, voice_channel)
-            await bot.music_player.join_and_play(mock_interaction, playlist_url, force_voice_channel=True)
+            # Get playlist URL from config
+            playlist_url = bot.propaganda_config.youtube_playlist_url
+            if playlist_url and voice_channel:
+                mock_interaction = MockInteraction(channel, voice_channel)
+                await bot.music_player.join_and_play(mock_interaction, playlist_url, force_voice_channel=True)
+            else:
+                logger.warning("Missing playlist URL or voice channel configuration")
         else:
             logger.error(f"Could not find configured voice channel with ID {bot.propaganda_config.voice_channel_id}")
             return
