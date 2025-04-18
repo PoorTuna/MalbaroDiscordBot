@@ -64,16 +64,7 @@ class PropagandaBot(commands.Bot):
     def add_listeners(self):
         """Add event listeners for logging command usage."""
 
-        @self.event
-        async def on_message(message):
-            """Log all messages that could be commands."""
-            # Don't respond to our own messages
-            if message.author == self.user:
-                return
-
-            # Only handle app commands, no prefix commands
-            pass
-
+        @self.tree.error
         async def on_app_command_error(interaction: discord.Interaction,
                                        error: app_commands.AppCommandError):
             """Log errors when processing slash commands."""
