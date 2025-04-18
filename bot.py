@@ -8,6 +8,7 @@ from config import PropagandaConfig
 from image_generation import generate_poster_image, generate_poster_text
 import pytz
 import json
+import asyncio
 
 logger = logging.getLogger(__name__)
 
