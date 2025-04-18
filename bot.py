@@ -46,8 +46,8 @@ class PropagandaBot(commands.Bot):
     async def setup_hook(self):
         """Called when the bot is starting up."""
         # Register slash commands
-        await self.tree.sync()
-        logger.info('Commands registered in setup hook')
+        synced_commands = await self.tree.sync()
+        logger.info(f'Commands registered in setup hook {synced_commands=}')
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
@@ -116,6 +116,30 @@ class PropagandaBot(commands.Bot):
             kwargs = ' '.join([f"{k}='{v}'" for k, v in ctx.kwargs.items()])
             logger.info(f"Keyword arguments: {kwargs}")
 
+    async def register_commands(self):
+        """Register all bot slash commands."""
+        try:
+            commands = await self.tree.sync()
+            logger.info(f"Successfully registered {len(commands)} global commands")
+
+            if self.user:
+                permissions = discord.Permissions(
+                    send_messages=True,
+                    embed_links=True,
+                    attach_files=True,
+                    manage_webhooks=True
+                )
+                invite_url = discord.utils.oauth_url(
+                    self.user.id,
+                    permissions=permissions,
+                    scopes=("bot", "applications.commands")
+                )
+                logger.info(f"Invite URL with proper permissions: {invite_url}")
+
+        except Exception as e:
+            logger.error(f"Error syncing slash commands: {e}")
+
+    
     async def _handle_generate(self, channel, response_handler):
         """Shared handler for generating propaganda poster."""
         await response_handler(
@@ -187,29 +211,6 @@ class PropagandaBot(commands.Bot):
         embed.add_field(name="Text Prompt", value=text_prompt, inline=False)
         
         await interaction.response.send_message(embed=embed)
-
-    async def register_commands(self):
-        """Register all bot slash commands."""
-        try:
-            commands = await self.tree.sync()
-            logger.info(f"Successfully registered {len(commands)} global commands")
-            
-            if self.user:
-                permissions = discord.Permissions(
-                    send_messages=True,
-                    embed_links=True,
-                    attach_files=True,
-                    manage_webhooks=True
-                )
-                invite_url = discord.utils.oauth_url(
-                    self.user.id,
-                    permissions=permissions,
-                    scopes=("bot", "applications.commands")
-                )
-                logger.info(f"Invite URL with proper permissions: {invite_url}")
-                
-        except Exception as e:
-            logger.error(f"Error syncing slash commands: {e}")
 
     async def generate_and_post_poster(self, channel=None):
         """Generate a propaganda poster and post it to the specified channel."""
