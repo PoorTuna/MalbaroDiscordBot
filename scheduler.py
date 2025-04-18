@@ -35,7 +35,7 @@ def setup_scheduler(bot):
     now = datetime.now(timezone)
     scheduled_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
     time_diff = now - scheduled_time
-    
+
     if 0 <= time_diff.total_seconds() <= 300:  # Within 5 minutes after scheduled time
         logger.info("Missed recent schedule - running now")
         asyncio.create_task(generate_daily_content(bot))
@@ -68,13 +68,14 @@ async def generate_daily_content(bot):
     logger.info(f"Scheduler triggered at {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
     logger.info("Generating daily propaganda poster and playing music")
 
-    if not bot.propaganda_config.channel_id:
+    channel_id = bot.propaganda_config.propaganda_scheduler.get("poster_output_channel_id")
+    if not channel_id:
         logger.warning("No channel configured for daily propaganda poster")
         return
 
-    channel = bot.get_channel(bot.propaganda_config.channel_id)
+    channel = bot.get_channel(channel_id)
     if not channel:
-        logger.error(f"Could not find channel with ID {bot.propaganda_config.channel_id}")
+        logger.error(f"Could not find channel with ID {channel_id}")
         return
 
     try:
@@ -85,18 +86,18 @@ async def generate_daily_content(bot):
         # Get voice channel and playlist URL from config
         voice_channel = bot.get_channel(bot.propaganda_config.voice_channel_id)
         playlist_url = bot.propaganda_config.youtube_playlist_url
-        
+
         if voice_channel and playlist_url:
             try:
                 # Connect to voice channel and wait for it to be ready
                 voice_client = await voice_channel.connect()
                 await asyncio.sleep(1)  # Wait for voice client to stabilize
                 bot.music_player.voice_clients[voice_channel.guild.id] = voice_client
-                
+
                 # Play random song from playlist
                 await bot.music_player.join_and_play(None, playlist_url, force_voice_channel=True)
                 logger.info(f"Successfully started playing music in voice channel {voice_channel.name}")
-                
+
                 # Disconnect after playing
                 if voice_channel.guild.id in bot.music_player.voice_clients:
                     await bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
