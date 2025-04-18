@@ -67,10 +67,15 @@ class MusicPlayer:
                         # Extract video info
                         info = ydl.extract_info(url, download=False)
                         if 'entries' in info:
-                            # Handle playlist URL
-                            video = random.choice(info['entries'])
+                            # Handle playlist URL - get all valid entries first
+                            valid_entries = [entry for entry in info['entries'] if entry is not None]
+                            if not valid_entries:
+                                raise Exception("No valid videos found in playlist")
+                            # Select random video from valid entries
+                            video = random.choice(valid_entries)
                             url = f"https://www.youtube.com/watch?v={video['id']}"
-                            info = ydl.extract_info(url, download=False)
+                            # Get specific video info
+                            info = ydl.extract_info(url, download=False, force_generic_extractor=False)
 
                         # Get audio stream URL
                         audio_url = info['url']
