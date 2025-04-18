@@ -47,64 +47,46 @@ class PropagandaBot(commands.Bot):
         await self.setup_commands()
 
     async def setup_commands(self):
-            # Command group for poster management
-            poster_group = app_commands.Group(name="poster", description="Manage propaganda poster generation")
-            
-            @poster_group.command(name="generate", description="Generate a propaganda poster immediately")
-            async def generate(interaction: discord.Interaction):
-                await self._handle_generate(interaction.channel, interaction.response.send_message)
+        @self.tree.command(name="generate", description="Generate a propaganda poster immediately")
+        async def generate(interaction: discord.Interaction):
+            await interaction.response.send_message("Generating your propaganda poster...")
+            await self.generate_and_post_poster(interaction.channel)
 
-            @poster_group.command(name="set_channel", description="Set the current channel for daily propaganda posters")
-            async def set_channel(interaction: discord.Interaction):
-                self.propaganda_config.set_channel_id(interaction.channel_id)
-                await interaction.response.send_message("This channel has been set for daily propaganda posters.")
+        @self.tree.command(name="set_channel", description="Set the current channel for propaganda posters")
+        async def set_channel(interaction: discord.Interaction):
+            self.propaganda_config.set_channel_id(interaction.channel_id)
+            await interaction.response.send_message("Channel set for propaganda posters.")
 
-            @poster_group.command(name="set_time", description="Set the time for daily propaganda posts")
-            async def set_time(interaction: discord.Interaction, time: str):
-                await self._handle_set_time(time, interaction.response.send_message)
+        @self.tree.command(name="set_time", description="Set the time for daily posts (HH:MM)")
+        async def set_time(interaction: discord.Interaction, time: str):
+            try:
+                hour, minute = map(int, time.split(':'))
+                if 0 <= hour < 24 and 0 <= minute < 60:
+                    self.propaganda_config.set_post_time(hour, minute)
+                    await interaction.response.send_message(f"Post time set to {time}")
+                else:
+                    await interaction.response.send_message("Invalid time format. Use HH:MM (24-hour format)")
+            except ValueError:
+                await interaction.response.send_message("Invalid time format. Use HH:MM (e.g., 15:30)")
 
-            @poster_group.command(name="set_text_prompt", description="Set the text prompt for generating poster text")
-            async def set_text_prompt(interaction: discord.Interaction, prompt: str):
-                self.propaganda_config.set_text_prompt(prompt)
-                await interaction.response.send_message(f"Text generation prompt set to: {prompt}")
-
-            @poster_group.command(name="set_timezone", description="Set the timezone for scheduling")
-            async def set_timezone(interaction: discord.Interaction, timezone: str):
-                try:
-                    pytz.timezone(timezone)
-                    self.propaganda_config.timezone = timezone
-                    self.propaganda_config.save_config()
-                    setup_scheduler(self)
-                    await interaction.response.send_message(f"✅ Timezone set to: {timezone}")
-                except Exception as e:
-                    await interaction.response.send_message("❌ Invalid timezone. Example: Asia/Jerusalem, Europe/London, US/Eastern")
-
-            @poster_group.command(name="show_config", description="Show current configuration")
-            async def show_config(interaction: discord.Interaction):
-                config = self.propaganda_config
-                channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
-
-                embed = discord.Embed(title="Propaganda Poster Configuration", color=discord.Color.blue())
-                embed.add_field(name="Channel", value=channel_mention, inline=True)
-                embed.add_field(name="Post Time", value=f"{config.hour:02d}:{config.minute:02d} {config.timezone}", inline=True)
-
-                text_prompt = config.text_prompt
-                if len(text_prompt) > 1000:
-                    text_prompt = text_prompt[:997] + "..."
-
-                embed.add_field(name="Text Prompt", value=text_prompt, inline=False)
-                await interaction.response.send_message(embed=embed)
-
-            @poster_group.command(name="set_caption", description="Set the caption text for generated posters")
-            async def set_poster_caption(interaction: discord.Interaction, caption: str):
-                self.propaganda_config.poster_caption = caption
+        @self.tree.command(name="set_timezone", description="Set the timezone")
+        async def set_timezone(interaction: discord.Interaction, timezone: str):
+            try:
+                pytz.timezone(timezone)
+                self.propaganda_config.timezone = timezone
                 self.propaganda_config.save_config()
-                await interaction.response.send_message(f"Poster caption set to: {caption}")
+                setup_scheduler(self)
+                await interaction.response.send_message(f"Timezone set to: {timezone}")
+            except Exception:
+                await interaction.response.send_message("Invalid timezone. Example: US/Eastern, Europe/London")
 
-            # Add all commands to the bot
-            self.tree.add_command(poster_group)
-            synced = await self.tree.sync()  # Sync commands with Discord
-            logger.info(f"Synced commands: {[cmd.name for cmd in synced]}")
+        @self.tree.command(name="set_prompt", description="Set the text generation prompt")
+        async def set_prompt(interaction: discord.Interaction, prompt: str):
+            self.propaganda_config.set_text_prompt(prompt)
+            await interaction.response.send_message("Text generation prompt updated.")
+
+        await self.tree.sync()
+        logger.info("Commands synced with Discord")
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
