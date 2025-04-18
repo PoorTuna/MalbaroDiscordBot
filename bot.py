@@ -448,12 +448,10 @@ class PropagandaBot(commands.Bot):
 
             # Create detailed error messages for poster generation
             error_str = str(e).lower()
-            if "invalid_request_error" in error_str or "openai.badrequest" in error_str:
-                user_message = "⚠️ Content Policy Alert: The poster couldn't be generated. Please try:\n- Using less controversial themes\n- Avoiding sensitive topics\n- Rewording your prompt"
-            elif "rate limit" in error_str or "429" in error_str:
+            if "rate limit" in error_str or "429" in error_str:
                 user_message = "⌛ Rate limit reached. The bot will try again in a few minutes."
             elif "api key" in error_str or "authentication" in error_str:
-                user_message = "🔑 API Key Error: Please check your OpenAI API key using the /set_openai_key command."
+                user_message = "🔑 API Key Error: Please check your WaveSpeed API token."
             elif "timeout" in error_str:
                 user_message = "⏱️ Request timed out. The bot will try again shortly."
             else:

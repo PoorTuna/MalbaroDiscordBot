@@ -32,7 +32,7 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
         last_error = None
         for token in api_tokens:
             try:
-                # Step 1: Create image generation request
+                # Common headers for all requests
                 headers = {
                     "Content-Type": "application/json",
                     "Authorization": f"Bearer {token}"
@@ -66,6 +66,7 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
                 max_attempts = 30
                 attempt = 0
                 while attempt < max_attempts:
+                    # Use the same headers for get request
                     result_response = await asyncio.get_event_loop().run_in_executor(
                         None,
                         lambda: requests.get(result_url, headers=headers)
