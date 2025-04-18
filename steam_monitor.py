@@ -30,14 +30,19 @@ class SteamMonitor:
             self.client = SteamClient()
             self.client._events = {}  # Initialize events dictionary
 
-            # Connect and login synchronously
-            if not self.client.connect():
-                logger.error("Failed to connect to Steam")
-                return
+            # Connect and login synchronously with better error handling
+            try:
+                logger.info("Attempting to connect to Steam...")
+                if not self.client.connect():
+                    logger.error("Failed to connect to Steam - connection failed")
+                    return
+                logger.info("Steam connection successful")
 
-            if not self.client.anonymous_login():
-                logger.error("Failed to login to Steam anonymously")
-                return
+                logger.info("Attempting anonymous Steam login...")
+                if not self.client.anonymous_login():
+                    logger.error("Failed to login to Steam anonymously - login failed")
+                    return
+                logger.info("Steam anonymous login successful")
 
             # Start monitoring
             asyncio.create_task(self._monitor_loop())
