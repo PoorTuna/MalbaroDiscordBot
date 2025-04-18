@@ -16,6 +16,7 @@ class PropagandaConfig:
         config_dir = os.getenv("PROPAGANDA_CONFIG_DIR", '')
         self.config_file = os.path.join(config_dir, self.DEFAULT_CONFIG_FILE)
         self.channel_id = None  # Discord channel ID to post propaganda to
+        self.voice_channel_id = None  # Discord voice channel ID for music
         self.hour = 12          # Hour of the day to post
         self.minute = 0         # Minute of the hour to post
         self.timezone = 'Asia/Jerusalem'  # Timezone for scheduling

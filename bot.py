@@ -103,6 +103,20 @@ class PropagandaBot(commands.Bot):
             await interaction.response.send_message(
                 "Channel set for propaganda posters.")
 
+        @self.tree.command(
+            name="set_voice_channel",
+            description="Set the voice channel for music playback")
+        async def set_voice_channel(interaction: discord.Interaction):
+            if not interaction.user.voice:
+                await interaction.response.send_message(
+                    "You must be in a voice channel to set it!")
+                return
+            voice_channel_id = interaction.user.voice.channel.id
+            self.propaganda_config.voice_channel_id = voice_channel_id
+            self.propaganda_config.save_config()
+            await interaction.response.send_message(
+                f"Voice channel set to: {interaction.user.voice.channel.name}")
+
         @self.tree.command(name="set_time",
                            description="Set the time for daily posts (HH:MM)")
         async def set_time(interaction: discord.Interaction, time: str):

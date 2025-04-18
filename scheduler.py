@@ -73,13 +73,14 @@ async def generate_daily_content(bot):
         await bot.generate_and_post_poster(channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
         
-        # Get voice channel
-        voice_channels = channel.guild.voice_channels
-        if not voice_channels:
-            logger.warning("No voice channels available for music playback")
+        # Get configured voice channel
+        voice_channel = None
+        if bot.propaganda_config.voice_channel_id:
+            voice_channel = bot.get_channel(bot.propaganda_config.voice_channel_id)
+        
+        if not voice_channel:
+            logger.warning("No voice channel configured or found for music playback")
             return
-            
-        voice_channel = voice_channels[0]  # Use first available voice channel
         
         # Create a mock interaction for the music player
         class MockInteraction:
