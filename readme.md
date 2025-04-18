@@ -1,69 +1,57 @@
-
 # Discord Propaganda Bot
 
 A Discord bot that generates and posts propaganda-style images on a schedule, with music playback capabilities.
 
-## Requirements
+## System Requirements
 
-### Python Version
+### Required Software
 - Python 3.11 or higher
-
-### System Dependencies
 - FFmpeg (for audio processing)
-- pkg-config
 - libffi
 - libsodium
-- libxcrypt
-- PostgreSQL
-- OpenSSL
 
-### Python Dependencies
-See `requirements.txt` for the complete list of Python packages. Key dependencies include:
-- discord.py (2.5.2+)
-- Flask (3.1.0+)
-- APScheduler (3.11.0+)
-- python-dotenv (1.1.0+)
-- pytz (2025.2+)
+### Dependencies
+All Python dependencies are listed in `requirements.txt`. Install them using:
+```bash
+pip install -r requirements.txt
+```
 
 ## Configuration Files
 
 ### propaganda_config.json
+Configure the bot's behavior with this file. Example configuration:
 ```json
 {
-    "voice_channel_id": ID of the Discord voice channel for music
-    "channel_id": ID of the Discord text channel for propaganda posts
-    "hour": Hour of the day for scheduled posts (24-hour format)
-    "minute": Minute of the hour for scheduled posts
-    "timezone": Timezone for scheduling (e.g., "Asia/Jerusalem")
-    "text_prompt": Template for image generation
-    "poster_caption": Caption prefix for posted images
-    "max_retries": Maximum attempts for image generation
-    "youtube_playlist_url": URL of the propaganda music playlist
+    "voice_channel_id": 123456789012345678,
+    "channel_id": 123456789012345678,
+    "hour": 12,
+    "minute": 15,
+    "timezone": "Asia/Jerusalem",
+    "text_prompt": "A vintage military recruitment poster featuring [your description]",
+    "poster_caption": "A True Malborian Culture Piece:",
+    "max_retries": 3,
+    "youtube_playlist_url": "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID"
 }
 ```
 
 ### tokens_config.json
+Store your API tokens in this file. Example configuration:
 ```json
 {
-    "discord_token": Your Discord bot token
-    "wavespeed_tokens": Array of WaveSpeed API tokens for image generation
+    "discord_token": "your_discord_bot_token_here",
+    "wavespeed_tokens": ["token1", "token2", "token3"]
 }
 ```
 
 ## Setup and Running
 
-1. Configure your tokens:
-   - Create `tokens_config.json` with your Discord bot token and WaveSpeed API tokens
-   - Alternatively, set the `DISCORD_TOKEN` environment variable
-
-2. Configure propaganda settings:
-   - Adjust `propaganda_config.json` with your desired settings
-   - Set appropriate channel IDs and scheduling preferences
-
-3. Run the bot:
-   - Click the "Run" button in Replit
-   - The bot will start and connect to Discord
-   - The web interface will be available on port 5000
+1. Install the required system dependencies
+2. Configure your tokens in `tokens_config.json`
+3. Configure bot settings in `propaganda_config.json`
+4. Run the bot:
+   ```bash
+   python main.py
+   ```
 
 ## Bot Commands
 
@@ -98,4 +86,3 @@ The bot includes comprehensive error handling for:
 - Ensure proper permissions for the bot in your Discord server
 - The bot requires both text and voice channel permissions for full functionality
 - Image generation depends on WaveSpeed API availability
-
