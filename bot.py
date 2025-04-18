@@ -46,7 +46,7 @@ class PropagandaBot(commands.Bot):
         """Called when the bot is starting up."""
         await self.setup_commands()
 
-        async def setup_commands(self):
+    async def setup_commands(self):
             # Command group for poster management
             poster_group = app_commands.Group(name="poster", description="Manage propaganda poster generation")
             
