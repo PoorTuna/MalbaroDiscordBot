@@ -51,6 +51,15 @@ Store your API tokens in this file. Example configuration:
 }
 ```
 
+### Getting a Steam API Key
+To obtain your Steam API key:
+1. Go to https://steamcommunity.com/dev/apikey
+2. Sign in with your Steam account
+3. Enter a domain name (can be anything for personal use)
+4. Accept the Steam Web API Terms of Use
+5. Click "Register" to generate your API key
+6. Copy the generated key and paste it in your `tokens_config.json` file
+
 ## Features
 
 ### Propaganda Generation
