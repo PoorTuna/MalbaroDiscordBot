@@ -128,19 +128,19 @@ class PropagandaBot(commands.Bot):
         """Register traditional prefix commands for backward compatibility."""
 
         @self.command(name="generate", help="Generate a propaganda poster immediately")
-        async def generate(ctx):
+        async def generate(self, ctx):
             """Generate and post a propaganda poster immediately."""
             await ctx.send("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
             await self.generate_and_post_poster(ctx.channel)
 
         @self.command(name="set_channel", help="Set the channel for daily propaganda posters")
-        async def set_channel(ctx):
+        async def set_channel(self, ctx):
             """Set the current channel as the destination for daily posters."""
             self.propaganda_config.set_channel_id(ctx.channel.id)
             await ctx.send(f"This channel has been set for daily propaganda posters.")
 
         @self.command(name="set_time", help="Set the time for daily propaganda posts (format: HH:MM in UTC)")
-        async def set_time(ctx, time_str):
+        async def set_time(self, ctx, time_str):
             """Set the time for daily propaganda poster generation."""
             try:
                 hour, minute = map(int, time_str.split(':'))
@@ -153,13 +153,13 @@ class PropagandaBot(commands.Bot):
                 await ctx.send("Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC).")
 
         @self.command(name="set_text_prompt", help="Set the text prompt for generating poster text")
-        async def set_text_prompt(ctx, *, prompt):
+        async def set_text_prompt(self, ctx, *, prompt):
             """Set the text prompt for generating poster text."""
             self.propaganda_config.set_text_prompt(prompt)
             await ctx.send(f"Text generation prompt set to: {prompt}")
 
         @self.command(name="show_config", help="Show current propaganda poster configuration")
-        async def show_config(ctx):
+        async def show_config(self, ctx):
             """Display the current configuration."""
             config = self.propaganda_config
             channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
