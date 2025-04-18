@@ -72,19 +72,25 @@ async def generate_daily_content(bot):
         await bot.generate_and_post_poster(channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
 
-        # Get configured voice channel
-        voice_channel = bot.get_channel(bot.propaganda_config.voice_channel_id)
-        if voice_channel:
-            # Get playlist URL from config
-            playlist_url = bot.propaganda_config.youtube_playlist_url
-            if playlist_url and voice_channel:
-                mock_interaction = MockInteraction(channel, voice_channel)
+        # Get voice channel ID from config
+        voice_channel_id = bot.propaganda_config.voice_channel_id
+        voice_channel = bot.get_channel(voice_channel_id)
+        
+        # Get playlist URL from config
+        playlist_url = bot.propaganda_config.youtube_playlist_url
+        
+        if voice_channel and playlist_url:
+            mock_interaction = MockInteraction(channel, voice_channel)
+            try:
                 await bot.music_player.join_and_play(mock_interaction, playlist_url, force_voice_channel=True)
-            else:
-                logger.warning("Missing playlist URL or voice channel configuration")
+                logger.info(f"Successfully started playing music in voice channel {voice_channel.name}")
+            except Exception as e:
+                logger.error(f"Error playing music: {e}")
         else:
-            logger.error(f"Could not find configured voice channel with ID {bot.propaganda_config.voice_channel_id}")
-            return
+            if not voice_channel:
+                logger.error(f"Could not find voice channel with ID {voice_channel_id}")
+            if not playlist_url:
+                logger.error("No playlist URL configured")
 
     except Exception as e:
         error_msg = f"Error in daily content generation: {e}"
