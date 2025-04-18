@@ -35,3 +35,5 @@ steam
 steam
 python-eventemitter
 gevent
+protobuf
+protobuf==3.20.3

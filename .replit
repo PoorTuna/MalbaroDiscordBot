@@ -2,7 +2,7 @@ modules = ["python-3.11", "web", "nix"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["cacert", "libffi", "pkg-config"]
+packages = ["cacert", "libev", "libffi", "pkg-config"]
 
 [deployment]
 deploymentTarget = "autoscale"
