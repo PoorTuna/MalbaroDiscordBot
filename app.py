@@ -49,7 +49,7 @@ def home():
     return render_template('index.html')
 
 @app.route('/start_bot', methods=['POST'])
-async def start_bot():
+def start_bot():
     global bot_thread, bot_status
     if bot_thread is None or not bot_thread.is_alive():
         try:
