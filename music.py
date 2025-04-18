@@ -11,7 +11,7 @@ class MusicPlayer:
     def add_to_playlist(self, url):
         self.playlist.append(url)
 
-    async def join_and_play(self, interaction, url=None):
+    async def join_and_play(self, interaction: discord.Interaction, url: str=None):
         if not interaction.user or not interaction.user.voice:
             await interaction.followup.send("You must be in a voice channel to use this command!")
             return
