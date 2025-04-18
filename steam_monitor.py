@@ -29,7 +29,7 @@ class SteamMonitor:
         except Exception as e:
             logger.error(f"Error starting Steam monitor: {e}")
             self.is_monitoring = False
-            
+
     async def _monitor_loop(self):
         """Background task for Steam monitoring."""
         self.is_monitoring = True
@@ -42,9 +42,8 @@ class SteamMonitor:
                         is_playing_cs2 = user.game_id in [730, 2371320]
 
                         # Only trigger if user wasn't playing CS2 before but is now
-                        if (steam_id in self.previous_statuses and 
-                            is_playing_cs2 and 
-                            not self.previous_statuses[steam_id]):
+                        if (steam_id not in self.previous_statuses or
+                            (is_playing_cs2 and not self.previous_statuses[steam_id])):
                             logger.info(f"User {steam_id} started playing CS2!")
                             await self.handle_cs2_start()
 
