@@ -52,8 +52,7 @@ class PropagandaConfig:
                 "channel_id": self.channel_id,
                 "hour": self.hour,
                 "minute": self.minute,
-                "theme": self.theme,
-                "style": self.style,
+                "timezone": self.timezone,
                 "text_prompt": self.text_prompt,
                 "poster_caption": self.poster_caption
             }

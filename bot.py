@@ -252,16 +252,26 @@ class PropagandaBot(commands.Bot):
             config = self.propaganda_config
             channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
 
+            # Create main configuration embed
             embed = discord.Embed(
                 title="Propaganda Poster Configuration",
-                color=discord.Color.red()
+                color=discord.Color.blue()
             )
-            embed.add_field(name="Channel", value=channel_mention, inline=False)
-            embed.add_field(name="Post Time (UTC)", value=f"{config.hour:02d}:{config.minute:02d}", inline=True)
-            embed.add_field(name="Text Prompt", value=config.text_prompt, inline=False)
-            embed.add_field(name="Timezone", value=config.timezone, inline=True)
+            embed.add_field(name="Channel", value=channel_mention, inline=True)
+            embed.add_field(name="Post Time", value=f"{config.hour:02d}:{config.minute:02d} {config.timezone}", inline=True)
 
-            await interaction.response.send_message(embed=embed)
+            # Truncate text prompt if too long
+            text_prompt = config.text_prompt
+            if len(text_prompt) > 1000:
+                text_prompt = text_prompt[:997] + "..."
+
+            embed.add_field(name="Text Prompt", value=text_prompt, inline=False)
+
+            try:
+                await interaction.response.send_message(embed=embed)
+            except discord.HTTPException as e:
+                logger.error(f"Error sending config embed: {e}")
+                await interaction.response.send_message("⚠️ Error displaying configuration. Please check the logs.", ephemeral=True)
 
 
 
