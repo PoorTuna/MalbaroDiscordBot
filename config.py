@@ -30,6 +30,7 @@ class PropagandaConfig:
         self.text_prompt = "Generate a short, inspiring slogan for a propaganda poster about technology and progress"
         self.poster_caption = "A True Malborian Culture Piece:"
         self.max_retries = 3
+        self.steam_api_key = ""
 
         # Load saved configuration if it exists
         self.load_config()

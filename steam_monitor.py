@@ -33,7 +33,7 @@ class SteamMonitor:
         while self.is_monitoring:
             try:
                 steam_ids = ','.join(self.watching_steam_ids)
-                api_key = self.bot.propaganda_config.get("steam_api_key")
+                api_key = self.bot.propaganda_config.steam_api_key
 
                 async with aiohttp.ClientSession() as session:
                     url = f"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key={api_key}&steamids={steam_ids}"
