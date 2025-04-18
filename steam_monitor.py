@@ -44,6 +44,8 @@ class SteamMonitor:
                     return
                 logger.info("Steam anonymous login successful")
 
+            except Exception as e:
+                logger.error(f"Error connecting to Steam: {e}")
             # Start monitoring
             asyncio.create_task(self._monitor_loop())
             logger.info("Steam monitoring started successfully")
