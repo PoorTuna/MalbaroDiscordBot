@@ -2,13 +2,14 @@
 import logging
 from steam.client import SteamClient
 import asyncio
+from eventemitter import EventEmitter
 
 logger = logging.getLogger(__name__)
 
 class SteamMonitor:
     def __init__(self, bot):
         self.bot = bot
-        self.client = SteamClient()
+        self.client = None
         self.watching_steam_ids = set()
         self.previous_statuses = {}
         self.is_monitoring = False
@@ -22,7 +23,11 @@ class SteamMonitor:
                 return
 
             self.watching_steam_ids = set(steam_ids)
-            self.client.anonymous_login()
+            self.client = SteamClient()
+            result = self.client.anonymous_login()
+            if not result:
+                logger.error("Failed to login to Steam anonymously")
+                return
             
             # Create monitoring task
             asyncio.create_task(self._monitor_loop())
@@ -35,6 +40,13 @@ class SteamMonitor:
         self.is_monitoring = True
         while self.is_monitoring:
             try:
+                if not self.client or not self.client.connected:
+                    logger.warning("Steam client disconnected, attempting to reconnect...")
+                    self.client = SteamClient()
+                    self.client.anonymous_login()
+                    await asyncio.sleep(5)
+                    continue
+
                 for steam_id in self.watching_steam_ids:
                     try:
                         user = self.client.get_user(steam_id)
