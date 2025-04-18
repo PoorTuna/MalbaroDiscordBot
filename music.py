@@ -2,8 +2,11 @@ import discord
 import yt_dlp
 import asyncio
 import random
+from discord.interactions import Interaction
+
 
 class MusicPlayer:
+
     def __init__(self):
         self.voice_clients = {}
         self.playlist = []
@@ -11,9 +14,10 @@ class MusicPlayer:
     def add_to_playlist(self, url):
         self.playlist.append(url)
 
-    async def join_and_play(self, interaction: discord.Interaction, url: str=None):
+    async def join_and_play(self, interaction: Interaction, url: str = None):
         if not interaction.user or not interaction.user.voice:
-            await interaction.followup.send("You must be in a voice channel to use this command!")
+            await interaction.followup.send(
+                "You must be in a voice channel to use this command!")
             return
 
         try:
@@ -47,20 +51,24 @@ class MusicPlayer:
                         audio_url = info['url']
 
                         # Create audio source and play
-                        source = await discord.FFmpegOpusAudio.from_probe(audio_url)
+                        source = await discord.FFmpegOpusAudio.from_probe(
+                            audio_url)
                         voice_client.play(source)
 
                         # Send confirmation message
-                        await interaction.followup.send(f"🎵 Now playing: {info.get('title', 'Unknown')}")
+                        await interaction.followup.send(
+                            f"🎵 Now playing: {info.get('title', 'Unknown')}")
 
                         # Wait until song finishes
                         while voice_client.is_playing():
                             await asyncio.sleep(1)
 
                     except Exception as e:
-                        await interaction.followup.send(f"Error playing song: {str(e)}")
+                        await interaction.followup.send(
+                            f"Error playing song: {str(e)}")
                 else:
-                    await interaction.followup.send("No URL provided and playlist is empty!")
+                    await interaction.followup.send(
+                        "No URL provided and playlist is empty!")
 
             # Disconnect after playing
             await voice_client.disconnect()
