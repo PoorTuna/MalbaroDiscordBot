@@ -42,9 +42,6 @@ class PropagandaBot(commands.Bot):
         except FileNotFoundError:
             self.tokens_config = {}
 
-        # Register traditional commands for backward compatibility
-        self.add_commands()
-
         # Add event listeners for logging
         self.add_listeners()
 
@@ -158,56 +155,6 @@ class PropagandaBot(commands.Bot):
             await response_handler(
                 "Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC)."
             )
-
-    def add_commands(self):
-        """Register traditional prefix commands for backward compatibility."""
-
-        @self.command(name="generate",
-                      help="Generate a propaganda poster immediately")
-        async def generate(self, ctx):
-            await self._handle_generate(ctx.channel, ctx.send)
-
-        @self.command(name="set_channel",
-                      help="Set the channel for daily propaganda posters")
-        async def set_channel(self, ctx):
-            self.propaganda_config.set_channel_id(ctx.channel.id)
-            await ctx.send(
-                f"This channel has been set for daily propaganda posters.")
-
-        @self.command(
-            name="set_time",
-            help=
-            "Set the time for daily propaganda posts (format: HH:MM in UTC)")
-        async def set_time(self, ctx, time_str):
-            await self._handle_set_time(time_str, ctx.send)
-
-        @self.command(name="set_text_prompt",
-                      help="Set the text prompt for generating poster text")
-        async def set_text_prompt(self, ctx, *, prompt):
-            """Set the text prompt for generating poster text."""
-            self.propaganda_config.set_text_prompt(prompt)
-            await ctx.send(f"Text generation prompt set to: {prompt}")
-
-        @self.command(name="show_config",
-                      help="Show current propaganda poster configuration")
-        async def show_config(self, ctx):
-            """Display the current configuration."""
-            config = self.propaganda_config
-            channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
-
-            embed = discord.Embed(title="Propaganda Poster Configuration",
-                                  color=discord.Color.red())
-            embed.add_field(name="Channel",
-                            value=channel_mention,
-                            inline=False)
-            embed.add_field(name="Post Time (UTC)",
-                            value=f"{config.hour:02d}:{config.minute:02d}",
-                            inline=True)
-            embed.add_field(name="Text Prompt",
-                            value=config.text_prompt,
-                            inline=False)
-
-            await ctx.send(embed=embed)
 
     async def register_commands(self):
         """Register all bot slash commands."""
