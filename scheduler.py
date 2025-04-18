@@ -21,18 +21,19 @@ def setup_scheduler(bot):
     minute = bot.propaganda_config.minute
     timezone = pytz.timezone(bot.propaganda_config.timezone)
     
-    # Schedule the daily poster generation task
+    # Schedule the poster generation task every 30 seconds
     scheduler.add_job(
         generate_daily_poster,
-        CronTrigger(hour=hour, minute=minute, timezone=timezone),
+        'interval',
+        seconds=30,
         args=[bot],
-        id='daily_propaganda',
+        id='propaganda_generator',
         replace_existing=True
     )
     
     # Start the scheduler
     scheduler.start()
-    logger.info(f"Scheduled daily propaganda poster generation for {hour:02d}:{minute:02d} {timezone}")
+    logger.info("Scheduled propaganda poster generation to run every 30 seconds")
 
 async def generate_daily_poster(bot):
     """
