@@ -1,4 +1,3 @@
-
 import discord
 import yt_dlp
 import asyncio
@@ -19,21 +18,37 @@ class MusicPlayer:
                             url: str = None,
                             force_voice_channel: bool = False):
         if not force_voice_channel and interaction and (not interaction.user or not interaction.user.voice):
-            await interaction.followup.send(
-                "You must be in a voice channel to use this command!")
+            if interaction:
+                await interaction.followup.send(
+                    "You must be in a voice channel to use this command!")
             return
 
         # Check if ffmpeg is installed
         import shutil
         if not shutil.which('ffmpeg'):
-            await interaction.followup.send(
-                "Error: ffmpeg is not installed. Please contact the bot administrator.")
+            if interaction:
+                await interaction.followup.send(
+                    "Error: ffmpeg is not installed. Please contact the bot administrator.")
             return
 
         try:
-            channel = interaction.user.voice.channel
-            voice_client = await channel.connect()
-            self.voice_clients[interaction.guild.id] = voice_client
+            # Determine the guild ID based on whether an interaction is provided
+            guild_id = interaction.guild.id if interaction else list(self.voice_clients.keys())[0] if self.voice_clients else None
+            if guild_id is None:
+                if interaction:
+                    await interaction.followup.send("Bot is not connected to any voice channel.")
+                return
+
+            # Get or create a voice client
+            voice_client = self.voice_clients.get(guild_id)
+            if not voice_client:
+                if interaction:
+                    channel = interaction.user.voice.channel
+                else:
+                    # Attempt to get a channel from the first guild in the client list.  This is a fallback and may fail.
+                    channel = list(self.voice_clients.values())[0].channel
+                voice_client = await channel.connect()
+                self.voice_clients[guild_id] = voice_client
 
             ydl_opts = {
                 'format': 'bestaudio/best',
@@ -65,27 +80,32 @@ class MusicPlayer:
                             audio_url)
                         voice_client.play(source)
 
-                        # Send confirmation message
-                        await interaction.followup.send(
-                            f"🎵 Now playing: {info.get('title', 'Unknown')}")
+                        # Send confirmation message if interaction is available
+                        if interaction:
+                            await interaction.followup.send(
+                                f"🎵 Now playing: {info.get('title', 'Unknown')}")
 
                         # Wait until song finishes
                         while voice_client.is_playing():
                             await asyncio.sleep(1)
 
                     except Exception as e:
-                        await interaction.followup.send(
-                            f"Error playing song: {str(e)}")
+                        if interaction:
+                            await interaction.followup.send(
+                                f"Error playing song: {str(e)}")
                 else:
-                    await interaction.followup.send(
-                        "No URL provided and playlist is empty!")
+                    if interaction:
+                        await interaction.followup.send(
+                            "No URL provided and playlist is empty!")
 
-                # Disconnect after playing
-                await voice_client.disconnect()
-                del self.voice_clients[interaction.guild.id]
+                # Disconnect after playing if not force_voice_channel
+                if not force_voice_channel:
+                    await voice_client.disconnect()
+                    del self.voice_clients[guild_id]
 
         except Exception as e:
-            await interaction.followup.send(f"Error: {str(e)}")
-            if interaction.guild.id in self.voice_clients:
-                await self.voice_clients[interaction.guild.id].disconnect()
-                del self.voice_clients[interaction.guild.id]
+            if interaction:
+                await interaction.followup.send(f"Error: {str(e)}")
+            if guild_id in self.voice_clients:
+                await self.voice_clients[guild_id].disconnect()
+                del self.voice_clients[guild_id]
