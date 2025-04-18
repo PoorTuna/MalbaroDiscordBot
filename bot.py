@@ -285,7 +285,7 @@ class PropagandaBot(commands.Bot):
             name="set_discord_token",
             description="Set the Discord bot token (use in DM only for security)"
         )
-        async def set_discord_token(interaction: discord.Interaction, token: str):
+        async def set_discord_token(self, interaction: discord.Interaction, token: str):
             """Set the Discord bot token."""
             if not isinstance(interaction.channel, discord.DMChannel):
                 await interaction.response.send_message("⚠️ For security, please use this command in a DM with the bot.", ephemeral=True)
