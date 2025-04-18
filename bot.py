@@ -184,7 +184,7 @@ class PropagandaBot(commands.Bot):
             name="generate",
             description="Generate a propaganda poster immediately"
         )
-        async def generate(interaction: discord.Interaction):
+        async def generate(self, interaction: discord.Interaction):
             """Generate and post a propaganda poster immediately."""
             await interaction.response.send_message("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
             await self.generate_and_post_poster(interaction.channel)
@@ -194,7 +194,7 @@ class PropagandaBot(commands.Bot):
             name="set_channel",
             description="Set the current channel for daily propaganda posters"
         )
-        async def set_channel(interaction: discord.Interaction):
+        async def set_channel(self, interaction: discord.Interaction):
             """Set the current channel as the destination for daily posters."""
             self.propaganda_config.set_channel_id(interaction.channel_id)
             await interaction.response.send_message(f"This channel has been set for daily propaganda posters.")
@@ -205,7 +205,7 @@ class PropagandaBot(commands.Bot):
             description="Set the time for daily propaganda posts (format: HH:MM in UTC)"
         )
         @app_commands.describe(time_str="Time in HH:MM format (24-hour, UTC)")
-        async def set_time(interaction: discord.Interaction, time_str: str):
+        async def set_time(self, interaction: discord.Interaction, time_str: str):
             """Set the time for daily propaganda poster generation."""
             try:
                 hour, minute = map(int, time_str.split(':'))
@@ -226,7 +226,7 @@ class PropagandaBot(commands.Bot):
             description="Set the text prompt for generating poster text"
         )
         @app_commands.describe(prompt="The prompt to guide text generation")
-        async def set_text_prompt(interaction: discord.Interaction, prompt: str):
+        async def set_text_prompt(self, interaction: discord.Interaction, prompt: str):
             """Set the text prompt for generating poster text."""
             self.propaganda_config.set_text_prompt(prompt)
             await interaction.response.send_message(f"Text generation prompt set to: {prompt}")
@@ -235,7 +235,7 @@ class PropagandaBot(commands.Bot):
             name="set_timezone",
             description="Set the timezone for propaganda poster scheduling"
         )
-        async def set_timezone(interaction: discord.Interaction, timezone: str):
+        async def set_timezone(self, interaction: discord.Interaction, timezone: str):
             """Set the timezone for scheduling."""
             try:
                 pytz.timezone(timezone)  # Validate timezone
