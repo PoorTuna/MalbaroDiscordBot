@@ -19,8 +19,6 @@ class PropagandaConfig:
         self.hour = 12          # Hour of the day to post
         self.minute = 0         # Minute of the hour to post
         self.timezone = 'Asia/Jerusalem'  # Timezone for scheduling
-        self.theme = "motivational"  # Theme of the propaganda
-        self.style = "soviet propaganda poster style"  # Art style of the propaganda
         self.text_prompt = "Generate a short, inspiring slogan for a propaganda poster about technology and progress"
         self.poster_caption = "A True Malborian Culture Piece:" # Added default caption
 

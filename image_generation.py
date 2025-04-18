@@ -38,7 +38,7 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
                     "Authorization": f"Bearer {token}"
                 }
 
-                prompt = f"A {style} poster. {text}. Theme: {theme}"
+                prompt = text
                 data = {
                     "enable_base64_output": True,
                     "enable_safety_checker": True,

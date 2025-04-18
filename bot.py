@@ -148,18 +148,6 @@ class PropagandaBot(commands.Bot):
             except ValueError:
                 await ctx.send("Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC).")
 
-        @self.command(name="set_theme", help="Set the theme for propaganda posters")
-        async def set_theme(ctx, *, theme):
-            """Set the theme for propaganda posters."""
-            self.propaganda_config.set_theme(theme)
-            await ctx.send(f"Propaganda poster theme set to: {theme}")
-
-        @self.command(name="set_style", help="Set the art style for propaganda posters")
-        async def set_style(ctx, *, style):
-            """Set the art style for propaganda posters."""
-            self.propaganda_config.set_style(style)
-            await ctx.send(f"Propaganda poster style set to: {style}")
-
         @self.command(name="set_text_prompt", help="Set the text prompt for generating poster text")
         async def set_text_prompt(ctx, *, prompt):
             """Set the text prompt for generating poster text."""
@@ -178,8 +166,6 @@ class PropagandaBot(commands.Bot):
             )
             embed.add_field(name="Channel", value=channel_mention, inline=False)
             embed.add_field(name="Post Time (UTC)", value=f"{config.hour:02d}:{config.minute:02d}", inline=True)
-            embed.add_field(name="Theme", value=config.theme, inline=True)
-            embed.add_field(name="Art Style", value=config.style, inline=True)
             embed.add_field(name="Text Prompt", value=config.text_prompt, inline=False)
 
             await ctx.send(embed=embed)
@@ -227,27 +213,6 @@ class PropagandaBot(commands.Bot):
             except ValueError:
                 await interaction.response.send_message("Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC).")
 
-        # Register the set_theme command
-        @self.tree.command(
-            name="set_theme",
-            description="Set the theme for propaganda posters"
-        )
-        @app_commands.describe(theme="The theme or subject of the propaganda")
-        async def set_theme(interaction: discord.Interaction, theme: str):
-            """Set the theme for propaganda posters."""
-            self.propaganda_config.set_theme(theme)
-            await interaction.response.send_message(f"Propaganda poster theme set to: {theme}")
-
-        # Register the set_style command
-        @self.tree.command(
-            name="set_style",
-            description="Set the art style for propaganda posters"
-        )
-        @app_commands.describe(style="The art style for the propaganda poster")
-        async def set_style(interaction: discord.Interaction, style: str):
-            """Set the art style for propaganda posters."""
-            self.propaganda_config.set_style(style)
-            await interaction.response.send_message(f"Propaganda poster style set to: {style}")
 
         # Register the set_text_prompt command
         @self.tree.command(
@@ -293,14 +258,12 @@ class PropagandaBot(commands.Bot):
             )
             embed.add_field(name="Channel", value=channel_mention, inline=False)
             embed.add_field(name="Post Time (UTC)", value=f"{config.hour:02d}:{config.minute:02d}", inline=True)
-            embed.add_field(name="Theme", value=config.theme, inline=True)
-            embed.add_field(name="Art Style", value=config.style, inline=True)
             embed.add_field(name="Text Prompt", value=config.text_prompt, inline=False)
             embed.add_field(name="Timezone", value=config.timezone, inline=True)
 
             await interaction.response.send_message(embed=embed)
 
-        
+
 
         @self.tree.command(
             name="set_discord_token",
@@ -343,10 +306,7 @@ class PropagandaBot(commands.Bot):
                 "generate": "Generate a propaganda poster immediately",
                 "set_channel": "Set the current channel for daily posters",
                 "set_time": "Set the daily posting time (format: HH:MM in UTC)",
-                "set_theme": "Set the theme for propaganda posters",
-                "set_style": "Set the art style for propaganda posters",
                 "set_text_prompt": "Set the text prompt for generating poster text",
-                "set_segmind_key": "Add a Segmind API key (DM only)",
                 "set_discord_token": "Set the Discord bot token (DM only)",
                 "set_timezone": "Set the timezone for propaganda poster scheduling",
                 "show_config": "Show the current bot configuration",
@@ -412,8 +372,6 @@ class PropagandaBot(commands.Bot):
             async with channel.typing():
                 # Get text and configuration from propaganda_config
                 text_prompt = self.propaganda_config.text_prompt
-                theme = self.propaganda_config.theme
-                style = self.propaganda_config.style
 
                 # Generate the poster text
                 poster_text = await generate_poster_text(text_prompt)
@@ -423,8 +381,6 @@ class PropagandaBot(commands.Bot):
                 # Generate the poster image using the text and configuration
                 image_url = await generate_poster_image(
                     poster_text,
-                    theme=theme,
-                    style=style
                 )
                 if not image_url:
                     raise ValueError("Failed to generate poster image")
