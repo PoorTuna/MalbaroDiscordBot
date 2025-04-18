@@ -21,7 +21,7 @@ async def generate_poster_text(prompt):
     """Generate text for a propaganda poster."""
     return prompt.strip()
 
-async def generate_poster_image(text, theme="motivational", style="soviet propaganda poster style"):
+async def generate_poster_image(text, theme="motivational", style="soviet propaganda poster style", max_retries=None):
     """Generate a propaganda poster image using WaveSpeed API."""
     try:
         tokens = load_tokens()

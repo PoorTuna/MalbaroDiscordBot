@@ -21,6 +21,7 @@ class PropagandaConfig:
         self.timezone = 'Asia/Jerusalem'  # Timezone for scheduling
         self.text_prompt = "Generate a short, inspiring slogan for a propaganda poster about technology and progress"
         self.poster_caption = "A True Malborian Culture Piece:" # Added default caption
+        self.max_retries = 3  # Default number of retries for image generation
 
         # Load saved configuration if it exists
         self.load_config()

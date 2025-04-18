@@ -393,6 +393,7 @@ class PropagandaBot(commands.Bot):
                 # Generate the poster image using the text and configuration
                 image_url = await generate_poster_image(
                     poster_text,
+                    max_retries=self.propaganda_config.max_retries
                 )
                 if not image_url:
                     raise ValueError("Failed to generate poster image")
