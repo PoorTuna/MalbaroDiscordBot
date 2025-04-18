@@ -1,7 +1,6 @@
 
 import logging
 from steam.client import SteamClient
-from steam.enums.common import EPersonaState
 import asyncio
 
 logger = logging.getLogger(__name__)
