@@ -19,6 +19,10 @@ class PropagandaBot(commands.Bot):
         """Initialize the bot with required intents and configuration."""
         intents = discord.Intents.default()
         intents.message_content = True
+        intents.voice_states = True
+        
+        from music import MusicPlayer
+        self.music_player = MusicPlayer()
 
         # Keep the prefix commands for backward compatibility
         super().__init__(command_prefix='!', intents=intents)
@@ -306,6 +310,35 @@ class PropagandaBot(commands.Bot):
             name="help",
             description="Get information about available commands"
         )
+        @self.tree.command(
+            name="play",
+            description="Play a random song from the configured playlist"
+        )
+        async def play(interaction: discord.Interaction):
+            """Play a random song from the playlist."""
+            await interaction.response.send_message("🎵 Playing a random song from the playlist...")
+            await self.music_player.join_and_play(interaction)
+
+        @self.tree.command(
+            name="play_url",
+            description="Play a specific YouTube URL"
+        )
+        @app_commands.describe(url="YouTube URL to play")
+        async def play_url(interaction: discord.Interaction, url: str):
+            """Play a specific YouTube URL."""
+            await interaction.response.send_message(f"🎵 Playing: {url}")
+            await self.music_player.join_and_play(interaction, url)
+
+        @self.tree.command(
+            name="add_to_playlist",
+            description="Add a YouTube URL to the playlist"
+        )
+        @app_commands.describe(url="YouTube URL to add")
+        async def add_to_playlist(interaction: discord.Interaction, url: str):
+            """Add a URL to the playlist."""
+            self.music_player.add_to_playlist(url)
+            await interaction.response.send_message(f"✅ Added to playlist: {url}")
+
         async def help(interaction: discord.Interaction):
             """Display help information about the bot."""
             embed = discord.Embed(

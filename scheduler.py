@@ -31,10 +31,10 @@ def setup_scheduler(bot):
     
     # Schedule the daily poster generation task
     scheduler.add_job(
-        generate_daily_poster,
+        generate_daily_content,
         CronTrigger(hour=hour, minute=minute, timezone=timezone),
         args=[bot],
-        id='daily_propaganda',
+        id='daily_content',
         replace_existing=True
     )
     
@@ -42,9 +42,9 @@ def setup_scheduler(bot):
     scheduler.start()
     logger.info(f"Scheduled daily propaganda poster generation for {hour:02d}:{minute:02d} {timezone}")
 
-async def generate_daily_poster(bot):
+async def generate_daily_content(bot):
     """
-    Generate and post the daily propaganda poster.
+    Generate and post the daily propaganda poster and play music.
     
     Args:
         bot: The Discord bot instance
