@@ -45,11 +45,14 @@ class PropagandaBot(commands.Bot):
 
     async def setup_hook(self):
         """Called when the bot is starting up."""
-        # Register commands first
-        self.tree.copy_global_to(guild=None)
-        await self.tree.sync()
+        pass
 
-        # Then define commands
+    async def on_ready(self):
+        """Called when the bot is ready and connected to Discord."""
+        logger.info(f'Logged in as {self.user.name} (ID: {self.user.id})')
+        logger.info('------')
+
+        # Register commands
         @self.tree.command(name="generate", description="Generate a propaganda poster immediately")
         async def generate(interaction: discord.Interaction):
             await self._handle_generate(interaction.channel, interaction.response.send_message)
