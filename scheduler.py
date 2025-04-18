@@ -49,7 +49,7 @@ async def generate_daily_content(bot):
     Args:
         bot: The Discord bot instance
     """
-    logger.info("Generating daily propaganda poster")
+    logger.info("Generating daily propaganda poster and playing music")
     
     if not bot.propaganda_config.channel_id:
         logger.warning("No channel configured for daily propaganda poster")
@@ -61,7 +61,13 @@ async def generate_daily_content(bot):
         return
     
     try:
+        # Generate and post the propaganda poster
         await bot.generate_and_post_poster(channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
+        
+        # Play music from configured playlist if URL is set
+        if bot.propaganda_config.youtube_playlist_url:
+            await bot.music_player.join_and_play(channel, bot.propaganda_config.youtube_playlist_url)
+            logger.info("Started playing music from playlist")
     except Exception as e:
-        logger.error(f"Error posting daily propaganda poster: {e}", exc_info=True)
+        logger.error(f"Error in daily content generation: {e}", exc_info=True)

@@ -2,61 +2,54 @@
 import discord
 import yt_dlp
 import asyncio
-import json
-from pathlib import Path
+import random
 
 class MusicPlayer:
     def __init__(self):
         self.voice_clients = {}
-        self.config_file = "music_config.json"
-        self.playlist = []
-        self.load_config()
-
-    def load_config(self):
-        try:
-            with open(self.config_file, 'r') as f:
-                config = json.load(f)
-                self.playlist = config.get('playlist', [])
-        except FileNotFoundError:
-            self.playlist = []
-
-    def save_config(self):
-        with open(self.config_file, 'w') as f:
-            json.dump({'playlist': self.playlist}, f, indent=4)
-
-    async def join_and_play(self, ctx, url=None):
-        if not ctx.author.voice:
-            await ctx.send("You must be in a voice channel!")
+        
+    async def join_and_play(self, ctx, playlist_url):
+        if not ctx.author or not ctx.author.voice:
+            await ctx.send("Unable to join voice channel!")
             return
 
         channel = ctx.author.voice.channel
         voice_client = await channel.connect()
         self.voice_clients[ctx.guild.id] = voice_client
 
-        if url is None and self.playlist:
-            import random
-            url = random.choice(self.playlist)
-
-        if url:
+        try:
             ydl_opts = {
                 'format': 'bestaudio/best',
-                'extractaudio': True,
-                'audioformat': 'mp3',
+                'extract_flat': True,
+                'playlistrandom': True,
             }
 
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info(url, download=False)
-                url2 = info['url']
-                source = await discord.FFmpegOpusAudio.from_probe(url2)
-                voice_client.play(source)
+                # Extract playlist info
+                info = ydl.extract_info(playlist_url, download=False)
+                if 'entries' in info:
+                    # Randomly select a video from playlist
+                    video = random.choice(info['entries'])
+                    video_url = f"https://www.youtube.com/watch?v={video['id']}"
+                    
+                    # Get the audio stream URL
+                    video_info = ydl.extract_info(video_url, download=False)
+                    url = video_info['url']
+                    
+                    # Play the audio
+                    source = await discord.FFmpegOpusAudio.from_probe(url)
+                    voice_client.play(source)
 
-                while voice_client.is_playing():
-                    await asyncio.sleep(1)
-                
+                    # Wait until the song finishes
+                    while voice_client.is_playing():
+                        await asyncio.sleep(1)
+
+            # Disconnect after playing
+            await voice_client.disconnect()
+            del self.voice_clients[ctx.guild.id]
+            
+        except Exception as e:
+            print(f"Error playing music: {e}")
+            if ctx.guild.id in self.voice_clients:
                 await voice_client.disconnect()
                 del self.voice_clients[ctx.guild.id]
-
-    def add_to_playlist(self, url):
-        if url not in self.playlist:
-            self.playlist.append(url)
-            self.save_config()

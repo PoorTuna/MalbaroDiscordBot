@@ -22,6 +22,7 @@ class PropagandaConfig:
         self.text_prompt = "Generate a short, inspiring slogan for a propaganda poster about technology and progress"
         self.poster_caption = "A True Malborian Culture Piece:" # Added default caption
         self.max_retries = 3  # Default number of retries for image generation
+        self.youtube_playlist_url = ""  # URL for propaganda music playlist
 
         # Load saved configuration if it exists
         self.load_config()
