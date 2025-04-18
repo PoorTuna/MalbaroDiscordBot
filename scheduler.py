@@ -39,8 +39,9 @@ def setup_scheduler(bot):
         args=[bot],
         id='daily_content',
         replace_existing=True,
-        misfire_grace_time=None,  # Always run missed jobs
-        coalesce=True  # Combine missed executions into a single one
+        misfire_grace_time=60,  # Allow 60 seconds grace period
+        coalesce=True,  # Only run once even if multiple executions are missed
+        max_instances=1  # Ensure only one instance runs at a time
     )
     
     # Start the scheduler
