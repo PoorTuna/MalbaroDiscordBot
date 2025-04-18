@@ -314,7 +314,7 @@ class PropagandaBot(commands.Bot):
             name="help",
             description="Get information about available commands"
         )
-        async def help(interaction: discord.Interaction):
+        async def help(self, interaction: discord.Interaction):
             """Display help information about the bot."""
             embed = discord.Embed(
                 title="Propaganda Poster Bot - Help",
@@ -362,12 +362,12 @@ class PropagandaBot(commands.Bot):
             description="Add a YouTube URL to the playlist"
         )
         @app_commands.describe(url="YouTube URL to add")
-        async def add_to_playlist(interaction: discord.Interaction, url: str):
+        async def add_to_playlist(self, interaction: discord.Interaction, url: str):
             """Add a URL to the playlist."""
             self.music_player.add_to_playlist(url)
             await interaction.response.send_message(f"✅ Added to playlist: {url}")
 
-        async def help(interaction: discord.Interaction):
+        async def help(self, interaction: discord.Interaction):
             """Display help information about the bot."""
             embed = discord.Embed(
                 title="Propaganda Poster Bot - Help",
