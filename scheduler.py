@@ -64,7 +64,7 @@ async def generate_daily_content(bot):
     Args:
         bot: The Discord bot instance
     """
-    current_time = datetime.now(pytz.timezone(bot.propaganda_config.timezone))
+    current_time = datetime.now(pytz.timezone(bot.propaganda_config.propaganda_scheduler["timezone"]))
     logger.info(f"Scheduler triggered at {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
     logger.info("Generating daily propaganda poster and playing music")
 
