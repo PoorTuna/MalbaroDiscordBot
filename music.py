@@ -2,7 +2,6 @@ import discord
 import yt_dlp
 import asyncio
 import random
-from discord.interactions import Interaction
 
 
 class MusicPlayer:
@@ -14,7 +13,9 @@ class MusicPlayer:
     def add_to_playlist(self, url):
         self.playlist.append(url)
 
-    async def join_and_play(self, interaction: Interaction, url: str = None):
+    async def join_and_play(self,
+                            interaction: discord.Interaction,
+                            url: str = None):
         if not interaction.user or not interaction.user.voice:
             await interaction.followup.send(
                 "You must be in a voice channel to use this command!")
