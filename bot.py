@@ -102,15 +102,10 @@ class PropagandaBot(commands.Bot):
 
         # Sync commands with Discord
         try:
-            synced_commands = await self.tree.sync()
-            logger.info(f"Synced {len(synced_commands)} {synced_commands=}")
+            await self.tree.sync()
+            logger.info("Successfully synced commands with Discord")
         except Exception as e:
             logger.error(f"Failed to sync commands: {e}")
-
-    async def on_ready(self):
-        """Called when the bot is ready and connected to Discord."""
-        logger.info(f'Logged in as {self.user.name} (ID: {self.user.id})')
-        logger.info('------')
 
         # Set up the scheduled task for daily poster generation
         setup_scheduler(self)
