@@ -147,13 +147,6 @@ class PropagandaBot(commands.Bot):
                 await interaction.response.send_message(
                     "Invalid timezone. Example: US/Eastern, Europe/London")
 
-        @self.tree.command(name="set_prompt",
-                           description="Set the text generation prompt")
-        async def set_prompt(interaction: discord.Interaction, prompt: str):
-            self.propaganda_config.set_text_prompt(prompt)
-            await interaction.response.send_message(
-                "Text generation prompt updated.")
-
         @self.tree.command(name="show_config",
                            description="Show current configuration")
         async def show_config(interaction: discord.Interaction):
