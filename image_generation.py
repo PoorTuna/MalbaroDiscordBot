@@ -25,15 +25,18 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
     """Generate a propaganda poster image using WaveSpeed API."""
     try:
         tokens = load_tokens()
-        api_key = tokens.get('wavespeed_api_key')
-        if not api_key:
-            raise ValueError("No WaveSpeed API key found")
-
-        # Step 1: Create image generation request
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}"
-        }
+        api_tokens = tokens.get('wavespeed_tokens', [])
+        if not api_tokens:
+            raise ValueError("No WaveSpeed tokens found")
+        
+        last_error = None
+        for token in api_tokens:
+            try:
+                # Step 1: Create image generation request
+                headers = {
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {token}"
+                }
 
         prompt = f"A {style} poster. {text}. Theme: {theme}"
         data = {
@@ -97,6 +100,13 @@ async def generate_poster_image(text, theme="motivational", style="soviet propag
             await asyncio.sleep(1)
 
         raise Exception("Timeout waiting for image generation")
+
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"Token failed, trying next token. Error: {e}")
+                continue
+
+        raise Exception(f"All tokens failed. Last error: {last_error}")
 
     except Exception as e:
         logger.error(f"Error generating poster image: {e}", exc_info=True)
