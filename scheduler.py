@@ -65,9 +65,21 @@ async def generate_daily_content(bot):
         await bot.generate_and_post_poster(channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
         
+        # Create a mock interaction for the music player
+        class MockInteraction:
+            def __init__(self, channel):
+                self.channel = channel
+                self.guild = channel.guild
+                self.user = channel.guild.me
+                self.followup = channel
+
+            async def send(self, *args, **kwargs):
+                await self.channel.send(*args, **kwargs)
+
         # Play music from configured playlist if URL is set
-        if bot.propaganda_config.youtube_playlist_url:
-            await bot.music_player.join_and_play(channel, bot.propaganda_config.youtube_playlist_url)
+        if hasattr(bot.propaganda_config, 'youtube_playlist_url') and bot.propaganda_config.youtube_playlist_url:
+            mock_interaction = MockInteraction(channel)
+            await bot.music_player.join_and_play(mock_interaction, bot.propaganda_config.youtube_playlist_url)
             logger.info("Started playing music from playlist")
     except Exception as e:
         logger.error(f"Error in daily content generation: {e}", exc_info=True)
