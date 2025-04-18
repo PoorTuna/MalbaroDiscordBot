@@ -60,6 +60,19 @@ To obtain your Steam API key:
 5. Click "Register" to generate your API key
 6. Copy the generated key and paste it in your `tokens_config.json` file
 
+### Finding Your Steam64 ID
+To find your Steam64 ID:
+1. Open your Steam profile in a web browser
+2. Right-click anywhere on the page and select "View Page Source"
+3. Press Ctrl+F and search for "steamid"
+4. Look for a 17-digit number that starts with "7656"
+   - This is your Steam64 ID (e.g., 76561198244212404)
+5. Add this ID to the "steam_ids" array in your `propaganda_config.json` file
+
+Alternatively, you can find your Steam64 ID using these methods:
+- If you know your custom URL: Visit https://steamid.xyz/ and enter your Steam custom URL
+- If your profile is public: Use https://steamid.xyz/ and enter your profile URL
+
 ## Features
 
 ### Propaganda Generation
