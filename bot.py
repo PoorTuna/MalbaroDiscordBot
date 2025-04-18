@@ -78,8 +78,7 @@ class PropagandaBot(commands.Bot):
 
         # Load tokens from config file
         tokens_config_dir = os.environ.get("TOKEN_CONFIG_DIR", '')
-        self.tokens_config_path = os.path.join(tokens_config_dir,
-                                               'tokens_config.json')
+        self.tokens_config_path = os.path.join(tokens_config_dir, 'tokens_config.json')
 
         try:
             with open(self.tokens_config_path, 'r') as f:
@@ -93,9 +92,6 @@ class PropagandaBot(commands.Bot):
     async def setup_hook(self):
         """Called when the bot is starting up."""
         await self.tree.sync()  # Sync commands with Discord
-
-        # Sync commands with Discord
-        await self.tree.sync()
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
@@ -115,11 +111,9 @@ class PropagandaBot(commands.Bot):
             pass
 
         @self.tree.error
-        async def on_app_command_error(interaction: discord.Interaction,
-                                       error: app_commands.AppCommandError):
+        async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
             """Log errors when processing slash commands."""
-            logger.error(f"Error executing slash command: {error}",
-                         exc_info=True)
+            logger.error(f"Error executing slash command: {error}", exc_info=True)
 
             # Create detailed user-friendly error messages
             user_message = "An error occurred while processing your command."
@@ -138,8 +132,7 @@ class PropagandaBot(commands.Bot):
                 logger.error(f"Unexpected error: {error}", exc_info=True)
                 user_message = f"❌ Error: {str(error)}\nPlease report this if the issue persists."
 
-            await interaction.response.send_message(user_message,
-                                                    ephemeral=True)
+            await interaction.response.send_message(user_message, ephemeral=True)
 
         # Set the error handler
         self.tree.on_error = on_app_command_error
@@ -147,15 +140,11 @@ class PropagandaBot(commands.Bot):
     async def on_app_command(self, interaction: discord.Interaction):
         """Log when slash commands are used."""
         command_name = interaction.command.name if interaction.command else "unknown"
-        logger.info(
-            f"Slash command '{command_name}' used by {interaction.user} in {interaction.channel}"
-        )
+        logger.info(f"Slash command '{command_name}' used by {interaction.user} in {interaction.channel}")
 
     async def on_command(self, ctx):
         """Log when regular commands are used."""
-        logger.info(
-            f"Regular command '{ctx.command}' used by {ctx.author} in {ctx.channel}"
-        )
+        logger.info(f"Regular command '{ctx.command}' used by {ctx.author} in {ctx.channel}")
 
         # Log the command arguments if any
         if ctx.args and len(ctx.args) > 1:  # First arg is the bot itself
@@ -170,12 +159,9 @@ class PropagandaBot(commands.Bot):
         """This method is deprecated - commands are now registered in setup_hook"""
         pass
 
-
     async def _handle_generate(self, channel, response_handler):
         """Shared handler for generating propaganda poster."""
-        await response_handler(
-            "A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬."
-        )
+        await response_handler("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
         await self.generate_and_post_poster(channel)
 
     async def _handle_set_time(self, time_str, response_handler):
@@ -184,16 +170,11 @@ class PropagandaBot(commands.Bot):
             hour, minute = map(int, time_str.split(':'))
             if 0 <= hour < 24 and 0 <= minute < 60:
                 self.propaganda_config.set_post_time(hour, minute)
-                await response_handler(
-                    f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.timezone}."
-                )
+                await response_handler(f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.timezone}.")
             else:
-                await response_handler(
-                    "Invalid time format. Please use HH:MM in 24-hour format.")
+                await response_handler("Invalid time format. Please use HH:MM in 24-hour format.")
         except ValueError:
-            await response_handler(
-                "Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC)."
-            )
+            await response_handler("Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC).")
 
     async def generate_and_post_poster(self, channel=None):
         """Generate a propaganda poster and post it to the specified channel."""
@@ -215,18 +196,14 @@ class PropagandaBot(commands.Bot):
                     raise ValueError("Failed to generate poster text")
 
                 # Generate the poster image using the text and configuration
-                image_url = await generate_poster_image(
-                    poster_text,
-                    max_retries=self.propaganda_config.max_retries)
+                image_url = await generate_poster_image(poster_text, max_retries=self.propaganda_config.max_retries)
                 if not image_url:
                     raise ValueError("Failed to generate poster image")
 
                 # Create message with the poster
                 with open(image_url, 'rb') as f:
                     file = discord.File(f, filename='propaganda_poster.png')
-                    await channel.send(
-                        file=file,
-                        content=f"**{self.propaganda_config.poster_caption}**")
+                    await channel.send(file=file, content=f"**{self.propaganda_config.poster_caption}**")
 
                 # Clean up the temporary file
                 import os
@@ -234,8 +211,7 @@ class PropagandaBot(commands.Bot):
                     os.remove(image_url)
                 except Exception as e:
                     logger.warning(f"Failed to delete temporary file: {e}")
-                logger.info(
-                    f"Posted propaganda poster to channel {channel.name}")
+                logger.info(f"Posted propaganda poster to channel {channel.name}")
 
         except Exception as e:
             error_msg = f"Error generating propaganda poster: {str(e)}"
@@ -255,30 +231,6 @@ class PropagandaBot(commands.Bot):
                 user_message = f"❌ Error: {str(e)}\nPlease report this if the issue persists."
 
             await channel.send(user_message)
-
-        async def _handle_generate(self, channel, response_handler):
-        """Shared handler for generating propaganda poster."""
-        await response_handler(
-            "A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬."
-        )
-        await self.generate_and_post_poster(channel)
-
-    async def _handle_set_time(self, time_str, response_handler):
-        """Shared handler for setting poster time."""
-        try:
-            hour, minute = map(int, time_str.split(':'))
-            if 0 <= hour < 24 and 0 <= minute < 60:
-                self.propaganda_config.set_post_time(hour, minute)
-                await response_handler(
-                    f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.timezone}."
-                )
-            else:
-                await response_handler(
-                    "Invalid time format. Please use HH:MM in 24-hour format.")
-        except ValueError:
-            await response_handler(
-                "Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC)."
-            )
 
     @app_commands.command(name="set_poster_caption", description="Set the caption text for generated posters")
     @app_commands.describe(caption="The caption text that accompanies each poster")
