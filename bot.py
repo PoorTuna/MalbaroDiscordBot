@@ -191,185 +191,6 @@ class PropagandaBot(commands.Bot):
     async def register_commands(self):
         """Register all bot slash commands."""
         try:
-            await self.tree.sync()
-            logger.info("Slash commands registered and synced")
-        except Exception as e:
-            logger.error(f"Error syncing slash commands: {e}")
-
-        @app_commands.command(
-            name="set_channel",
-            description="Set the current channel for daily propaganda posters")
-        async def set_channel(self, interaction: discord.Interaction):
-            """Set the current channel as the destination for daily posters."""
-            self.propaganda_config.set_channel_id(interaction.channel_id)
-            await interaction.response.send_message(
-                f"This channel has been set for daily propaganda posters.")
-
-        @app_commands.command(
-            name="set_time",
-            description=
-            "Set the time for daily propaganda posts (format: HH:MM in UTC)")
-        @app_commands.describe(time_str="Time in HH:MM format (24-hour, UTC)")
-        async def set_time(self, interaction: discord.Interaction,
-                           time_str: str):
-            await self._handle_set_time(time_str,
-                                        interaction.response.send_message)
-
-        @app_commands.command(
-            name="set_text_prompt",
-            description="Set the text prompt for generating poster text")
-        @app_commands.describe(prompt="The prompt to guide text generation")
-        async def set_text_prompt(self, interaction: discord.Interaction,
-                                  prompt: str):
-            """Set the text prompt for generating poster text."""
-            self.propaganda_config.set_text_prompt(prompt)
-            await interaction.response.send_message(
-                f"Text generation prompt set to: {prompt}")
-
-        @app_commands.command(
-            name="set_timezone",
-            description="Set the timezone for propaganda poster scheduling")
-        async def set_timezone(self, interaction: discord.Interaction,
-                               timezone: str):
-            """Set the timezone for scheduling."""
-            try:
-                pytz.timezone(timezone)  # Validate timezone
-                self.propaganda_config.timezone = timezone
-                self.propaganda_config.save_config()
-
-                # Reschedule with new timezone
-                setup_scheduler(self)
-
-                await interaction.response.send_message(
-                    f"✅ Timezone set to: {timezone}")
-            except Exception as e:
-                await interaction.response.send_message(
-                    f"❌ Invalid timezone. Example valid timezones: Asia/Jerusalem, Europe/London, US/Eastern"
-                )
-
-        @app_commands.command(
-            name="show_config",
-            description="Show current propaganda poster configuration")
-        async def show_config(self, interaction: discord.Interaction):
-            """Display the current configuration."""
-            config = self.propaganda_config
-            channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
-
-            # Create main configuration embed
-            embed = discord.Embed(title="Propaganda Poster Configuration",
-                                  color=discord.Color.blue())
-            embed.add_field(name="Channel", value=channel_mention, inline=True)
-            embed.add_field(
-                name="Post Time",
-                value=
-                f"{config.hour:02d}:{config.minute:02d} {config.timezone}",
-                inline=True)
-
-            # Truncate text prompt if too long
-            text_prompt = config.text_prompt
-            if len(text_prompt) > 1000:
-                text_prompt = text_prompt[:997] + "..."
-
-            embed.add_field(name="Text Prompt",
-                            value=text_prompt,
-                            inline=False)
-
-            try:
-                await interaction.response.send_message(embed=embed)
-            except discord.HTTPException as e:
-                logger.error(f"Error sending config embed: {e}")
-                await interaction.response.send_message(
-                    "⚠️ Error displaying configuration. Please check the logs.",
-                    ephemeral=True)
-
-        @app_commands.command(
-            name="set_discord_token",
-            description=
-            "Set the Discord bot token (use in DM only for security)")
-        async def set_discord_token(self, interaction: discord.Interaction,
-                                    token: str):
-            """Set the Discord bot token."""
-            if not isinstance(interaction.channel, discord.DMChannel):
-                await interaction.response.send_message(
-                    "⚠️ For security, please use this command in a DM with the bot.",
-                    ephemeral=True)
-                return
-
-            try:
-                config = {}
-                if os.path.exists(self.tokens_config_path):
-                    with open(self.tokens_config_path, 'r') as f:
-                        config = json.load(f)
-
-                config['discord_token'] = token
-                with open(self.tokens_config_path, 'w') as f:
-                    json.dump(config, f, indent=4)
-
-                await interaction.response.send_message(
-                    "✅ Discord token has been updated!", ephemeral=True)
-            except Exception as e:
-                await interaction.response.send_message(
-                    f"❌ Error setting Discord token: {str(e)}", ephemeral=True)
-
-        @app_commands.command(
-            name="propaganda_help",
-            description="Get information about available commands")
-        async def propaganda_help(self, interaction: discord.Interaction):
-            """Display help information about the bot."""
-            embed = discord.Embed(
-                title="Propaganda Poster Bot - Help",
-                description=
-                "I am a bot that generates propaganda-style posters using AI. Here are my commands:",
-                color=discord.Color.blue())
-
-            commands = {
-                "generate": "Generate a propaganda poster immediately",
-                "set_channel": "Set the current channel for daily posters",
-                "set_time":
-                "Set the daily posting time (format: HH:MM in UTC)",
-                "set_text_prompt":
-                "Set the text prompt for generating poster text",
-                "set_discord_token": "Set the Discord bot token (DM only)",
-                "set_timezone":
-                "Set the timezone for propaganda poster scheduling",
-                "show_config": "Show the current bot configuration",
-                "help": "Display this help message"
-            }
-
-            for cmd, desc in commands.items():
-                embed.add_field(name=f"/{cmd}", value=desc, inline=False)
-
-            await interaction.response.send_message(embed=embed)
-
-        @app_commands.command(
-            name="play",
-            description="Play a random song from the configured playlist")
-        async def play(self, interaction: discord.Interaction):
-            """Play a random song from the playlist."""
-            await interaction.response.send_message(
-                "🎵 Playing a random song from the playlist...")
-            await self.music_player.join_and_play(interaction)
-
-        @app_commands.command(name="play_url",
-                              description="Play a specific YouTube URL")
-        @app_commands.describe(url="YouTube URL to play")
-        async def play_url(self, interaction: discord.Interaction, url: str):
-            """Play a specific YouTube URL."""
-            await interaction.response.send_message(f"🎵 Playing: {url}")
-            await self.music_player.join_and_play(interaction, url)
-
-        @app_commands.command(name="add_to_playlist",
-                              description="Add a YouTube URL to the playlist")
-        @app_commands.describe(url="YouTube URL to add")
-        async def add_to_playlist(self, interaction: discord.Interaction,
-                                  url: str):
-            """Add a URL to the playlist."""
-            self.music_player.add_to_playlist(url)
-            await interaction.response.send_message(
-                f"✅ Added to playlist: {url}")
-
-        # Try to sync the commands with Discord
-        try:
             # Try to find a guild to sync commands to
             guilds = self.guilds
             if guilds:
@@ -399,9 +220,9 @@ class PropagandaBot(commands.Bot):
             # Print invite URL with proper permissions
             app_id = self.user.id
             permissions = discord.Permissions(send_messages=True,
-                                              embed_links=True,
-                                              attach_files=True,
-                                              manage_webhooks=True)
+                                           embed_links=True,
+                                           attach_files=True,
+                                           manage_webhooks=True)
             invite_url = discord.utils.oauth_url(
                 app_id,
                 permissions=permissions,
@@ -410,7 +231,6 @@ class PropagandaBot(commands.Bot):
 
         except Exception as e:
             logger.error(f"Error syncing slash commands: {e}")
-            # Continue with regular commands if slash commands fail
 
     async def generate_and_post_poster(self, channel=None):
         """Generate a propaganda poster and post it to the specified channel."""
