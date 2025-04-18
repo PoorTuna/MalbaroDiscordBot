@@ -30,6 +30,15 @@ def setup_scheduler(bot):
     minute = bot.propaganda_config.minute
     timezone = pytz.timezone(bot.propaganda_config.timezone)
 
+    # Check if we missed today's run within last 5 minutes
+    now = datetime.now(timezone)
+    scheduled_time = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+    time_diff = now - scheduled_time
+    
+    if 0 <= time_diff.total_seconds() <= 300:  # Within 5 minutes after scheduled time
+        logger.info("Missed recent schedule - running now")
+        asyncio.create_task(generate_daily_content(bot))
+
     # Schedule the daily content generation task
     scheduler.configure(timezone=timezone)  # Set scheduler default timezone
     scheduler.add_job(
