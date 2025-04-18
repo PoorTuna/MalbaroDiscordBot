@@ -13,7 +13,7 @@ class SteamMonitor:
         self.watching_steam_ids = set()
         self.previous_statuses = {}
         self.is_monitoring = False
-
+        
     async def start(self):
         """Start monitoring all configured Steam profiles."""
         try:
@@ -23,7 +23,17 @@ class SteamMonitor:
                 return
 
             self.watching_steam_ids = set(steam_ids)
+            
+            # Initialize Steam client
             self.client = SteamClient()
+            self.client._events = {}  # Initialize events dictionary
+            
+            # Try to login
+            result = await self.client.connect()
+            if not result:
+                logger.error("Failed to connect to Steam")
+                return
+                
             result = self.client.anonymous_login()
             if not result:
                 logger.error("Failed to login to Steam anonymously")
@@ -31,6 +41,8 @@ class SteamMonitor:
             
             # Create monitoring task
             asyncio.create_task(self._monitor_loop())
+            logger.info("Steam monitoring started successfully")
+            
         except Exception as e:
             logger.error(f"Error starting Steam monitor: {e}")
             self.is_monitoring = False
@@ -42,24 +54,24 @@ class SteamMonitor:
             try:
                 if not self.client or not self.client.connected:
                     logger.warning("Steam client disconnected, attempting to reconnect...")
-                    self.client = SteamClient()
-                    self.client.anonymous_login()
+                    await self.start()
                     await asyncio.sleep(5)
                     continue
 
                 for steam_id in self.watching_steam_ids:
                     try:
-                        user = self.client.get_user(steam_id)
-                        # Check for both CS2 and CSGO game IDs
-                        is_playing_cs2 = user.game_id in [730, 2371320]
+                        user = self.client.get_user(int(steam_id))
+                        if user:
+                            # Check for both CS2 and CSGO game IDs
+                            is_playing_cs2 = user.game_id in [730, 2371320]
 
-                        # Only trigger if user wasn't playing CS2 before but is now
-                        if (steam_id not in self.previous_statuses or
-                            (is_playing_cs2 and not self.previous_statuses[steam_id])):
-                            logger.info(f"User {steam_id} started playing CS2!")
-                            await self.handle_cs2_start()
+                            # Only trigger if user wasn't playing CS2 before but is now
+                            if (steam_id not in self.previous_statuses or
+                                (is_playing_cs2 and not self.previous_statuses[steam_id])):
+                                logger.info(f"User {steam_id} started playing CS2!")
+                                await self.handle_cs2_start()
 
-                        self.previous_statuses[steam_id] = is_playing_cs2
+                            self.previous_statuses[steam_id] = is_playing_cs2
                     except Exception as e:
                         logger.error(f"Error checking Steam ID {steam_id}: {e}")
 
@@ -71,8 +83,9 @@ class SteamMonitor:
     async def stop(self):
         """Stop monitoring Steam profiles."""
         self.is_monitoring = False
-        if self.client:
+        if self.client and self.client.connected:
             self.client.logout()
+            await self.client.disconnect()
 
     async def handle_cs2_start(self):
         """Handle when a user starts playing CS2."""
