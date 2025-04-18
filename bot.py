@@ -144,16 +144,15 @@ class PropagandaBot(commands.Bot):
     async def register_commands(self):
         """Register all bot slash commands."""
         # Create a command tree
-        self.tree.clear_commands(guild=None)
+        self.clear_commands(guild=None)
 
-        @self.tree.command(
-            name="generate",
-            description="Generate a propaganda poster immediately")
+        @self.command(name="generate",
+                      description="Generate a propaganda poster immediately")
         async def generate(self, interaction: Interaction):
             await self._handle_generate(interaction.channel,
                                         interaction.response.send_message)
 
-        @self.tree.command(
+        @self.command(
             name="set_channel",
             description="Set the current channel for daily propaganda posters")
         async def set_channel(self, interaction: Interaction):
@@ -162,7 +161,7 @@ class PropagandaBot(commands.Bot):
             await interaction.response.send_message(
                 f"This channel has been set for daily propaganda posters.")
 
-        @self.tree.command(
+        @self.command(
             name="set_time",
             description=
             "Set the time for daily propaganda posts (format: HH:MM in UTC)")
@@ -171,7 +170,7 @@ class PropagandaBot(commands.Bot):
             await self._handle_set_time(time_str,
                                         interaction.response.send_message)
 
-        @self.tree.command(
+        @self.command(
             name="set_text_prompt",
             description="Set the text prompt for generating poster text")
         @app_commands.describe(prompt="The prompt to guide text generation")
@@ -181,7 +180,7 @@ class PropagandaBot(commands.Bot):
             await interaction.response.send_message(
                 f"Text generation prompt set to: {prompt}")
 
-        @self.tree.command(
+        @self.command(
             name="set_timezone",
             description="Set the timezone for propaganda poster scheduling")
         async def set_timezone(self, interaction: Interaction, timezone: str):
@@ -201,7 +200,7 @@ class PropagandaBot(commands.Bot):
                     f"❌ Invalid timezone. Example valid timezones: Asia/Jerusalem, Europe/London, US/Eastern"
                 )
 
-        @self.tree.command(
+        @self.command(
             name="show_config",
             description="Show current propaganda poster configuration")
         async def show_config(self, interaction: Interaction):
@@ -236,7 +235,7 @@ class PropagandaBot(commands.Bot):
                     "⚠️ Error displaying configuration. Please check the logs.",
                     ephemeral=True)
 
-        @self.tree.command(
+        @self.command(
             name="set_discord_token",
             description=
             "Set the Discord bot token (use in DM only for security)")
@@ -265,9 +264,8 @@ class PropagandaBot(commands.Bot):
                 await interaction.response.send_message(
                     f"❌ Error setting Discord token: {str(e)}", ephemeral=True)
 
-        @self.tree.command(
-            name="help",
-            description="Get information about available commands")
+        @self.command(name="help",
+                      description="Get information about available commands")
         async def help(self, interaction: Interaction):
             """Display help information about the bot."""
             embed = discord.Embed(
@@ -295,7 +293,7 @@ class PropagandaBot(commands.Bot):
 
             await interaction.response.send_message(embed=embed)
 
-        @self.tree.command(
+        @self.command(
             name="play",
             description="Play a random song from the configured playlist")
         async def play(self, interaction: Interaction):
@@ -304,16 +302,16 @@ class PropagandaBot(commands.Bot):
                 "🎵 Playing a random song from the playlist...")
             await self.music_player.join_and_play(interaction)
 
-        @self.tree.command(name="play_url",
-                           description="Play a specific YouTube URL")
+        @self.command(name="play_url",
+                      description="Play a specific YouTube URL")
         @app_commands.describe(url="YouTube URL to play")
         async def play_url(self, interaction: Interaction, url: str):
             """Play a specific YouTube URL."""
             await interaction.response.send_message(f"🎵 Playing: {url}")
             await self.music_player.join_and_play(interaction, url)
 
-        @self.tree.command(name="add_to_playlist",
-                           description="Add a YouTube URL to the playlist")
+        @self.command(name="add_to_playlist",
+                      description="Add a YouTube URL to the playlist")
         @app_commands.describe(url="YouTube URL to add")
         async def add_to_playlist(self, interaction: Interaction, url: str):
             """Add a URL to the playlist."""
@@ -426,9 +424,8 @@ class PropagandaBot(commands.Bot):
 
             await channel.send(user_message)
 
-        @self.tree.command(
-            name="set_poster_caption",
-            description="Set the caption text for generated posters")
+        @self.command(name="set_poster_caption",
+                      description="Set the caption text for generated posters")
         @app_commands.describe(
             caption="The caption text that accompanies each poster")
         async def set_poster_caption(self, interaction: Interaction,
