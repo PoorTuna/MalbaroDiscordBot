@@ -95,8 +95,8 @@ class PropagandaBot(commands.Bot):
 
         # Sync commands with Discord
         try:
-            synced = await self.tree.sync()
-            logger.info(f"Synced {len(synced)} commands")
+            synced_commands = await self.tree.sync()
+            logger.info(f"Synced {len(synced_commands)} {synced_commands=}")
         except Exception as e:
             logger.error(f"Failed to sync commands: {e}")
 
