@@ -34,13 +34,15 @@ class SteamMonitor:
             try:
                 logger.info("Attempting to connect to Steam...")
                 if not self.client.connect():
-                    logger.error("Failed to connect to Steam - connection failed")
+                    logger.error(
+                        "Failed to connect to Steam - connection failed")
                     return
                 logger.info("Steam connection successful")
 
                 logger.info("Attempting anonymous Steam login...")
                 if not self.client.anonymous_login():
-                    logger.error("Failed to login to Steam anonymously - login failed")
+                    logger.error(
+                        "Failed to login to Steam anonymously - login failed")
                     return
                 logger.info("Steam anonymous login successful")
 
@@ -71,6 +73,8 @@ class SteamMonitor:
                 for steam_id in self.watching_steam_ids:
                     try:
                         user = self.client.get_user(int(steam_id))
+                        print(user.game_played_app_id, "xddddd")
+
                         if user:
                             if not self.client.user or not hasattr(
                                     self.client.user, 'personas'):
