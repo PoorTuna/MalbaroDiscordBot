@@ -23,7 +23,9 @@ class PropagandaConfig:
             "timezone": 'Asia/Jerusalem',
             "poster_output_channel_id": None,
             "voice_channel_id": None,
-            "youtube_playlist_url": ""
+            "youtube_playlist_url": "",
+            "steam_ids": [],
+            "cs2_alert_video_url": None
         }
         self.text_prompt = "Generate a short, inspiring slogan for a propaganda poster about technology and progress"
         self.poster_caption = "A True Malborian Culture Piece:"

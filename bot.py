@@ -182,6 +182,11 @@ class PropagandaBot(commands.Bot):
         logger.info('------')
         # Set up the scheduled task for daily poster generation
         setup_scheduler(self)
+        
+        # Start Steam monitoring
+        from steam_monitor import SteamMonitor
+        self.steam_monitor = SteamMonitor(self)
+        asyncio.create_task(self.steam_monitor.start())
 
     async def on_error(self, event, *args, **kwargs):
         """Handle any uncaught exceptions in the bot."""
