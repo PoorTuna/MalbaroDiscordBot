@@ -73,7 +73,7 @@ class SteamMonitor:
                 for steam_id in self.watching_steam_ids:
                     try:
                         user = self.client.get_user(int(steam_id))
-                        print(user.game_played_app_id, "xddddd")
+                        print(user, "xddddd", repr(user))
 
                         if user:
                             if not self.client.user or not hasattr(
