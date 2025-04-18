@@ -56,8 +56,8 @@ class SteamMonitor:
                                     # Reset status when they stop playing
                                     self.previous_statuses[steam_id] = False
                                 else:
-                                    # Only update status if starting CS2
-                                    self.previous_statuses[steam_id] = is_playing_cs2 and not was_playing_cs2
+                                    # Always update the status
+                                    self.previous_statuses[steam_id] = is_playing_cs2
 
                 await asyncio.sleep(30)  # Check every 30 seconds
 
