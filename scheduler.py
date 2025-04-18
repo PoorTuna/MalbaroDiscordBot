@@ -9,17 +9,19 @@ logger = logging.getLogger(__name__)
 
 def setup_scheduler(bot):
     """
-    Set up the scheduler for daily propaganda poster generation.
+    Set up the scheduler for daily propaganda poster generation and music.
     
     Args:
         bot: The Discord bot instance
     """
-    # Create new scheduler and shutdown any existing ones
+    global current_scheduler
+    
+    # Shutdown existing scheduler if it exists
     try:
         if hasattr(setup_scheduler, 'current_scheduler'):
-            setup_scheduler.current_scheduler.shutdown()
-    except Exception:
-        pass
+            setup_scheduler.current_scheduler.shutdown(wait=False)
+    except Exception as e:
+        logger.error(f"Error shutting down existing scheduler: {e}")
         
     scheduler = AsyncIOScheduler()
     setup_scheduler.current_scheduler = scheduler
@@ -29,13 +31,14 @@ def setup_scheduler(bot):
     minute = bot.propaganda_config.minute
     timezone = pytz.timezone(bot.propaganda_config.timezone)
     
-    # Schedule the daily poster generation task
+    # Schedule the daily content generation task
     scheduler.add_job(
         generate_daily_content,
         CronTrigger(hour=hour, minute=minute, timezone=timezone),
         args=[bot],
         id='daily_content',
-        replace_existing=True
+        replace_existing=True,
+        misfire_grace_time=None  # Always run missed jobs
     )
     
     # Start the scheduler
@@ -65,21 +68,56 @@ async def generate_daily_content(bot):
         await bot.generate_and_post_poster(channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
         
+        # Get voice channel
+        voice_channels = channel.guild.voice_channels
+        if not voice_channels:
+            logger.warning("No voice channels available for music playback")
+            return
+            
+        voice_channel = voice_channels[0]  # Use first available voice channel
+        
         # Create a mock interaction for the music player
         class MockInteraction:
-            def __init__(self, channel):
-                self.channel = channel
-                self.guild = channel.guild
-                self.user = channel.guild.me
-                self.followup = channel
+            def __init__(self, text_channel, voice_channel):
+                self.channel = text_channel
+                self.guild = text_channel.guild
+                self.user = text_channel.guild.me
+                self.followup = text_channel
+                self._voice_channel = voice_channel
+
+            @property
+            def voice(self):
+                class VoiceState:
+                    def __init__(self, channel):
+                        self.channel = channel
+                return VoiceState(self._voice_channel)
+
+            async def response(self):
+                return self
 
             async def send(self, *args, **kwargs):
                 await self.channel.send(*args, **kwargs)
 
-        # Play music from configured playlist if URL is set
-        if hasattr(bot.propaganda_config, 'youtube_playlist_url') and bot.propaganda_config.youtube_playlist_url:
-            mock_interaction = MockInteraction(channel)
-            await bot.music_player.join_and_play(mock_interaction, bot.propaganda_config.youtube_playlist_url)
-            logger.info("Started playing music from playlist")
+            async def defer(self):
+                pass
+
+        # Play music from configured playlist if available
+        playlist_url = getattr(bot.propaganda_config, 'youtube_playlist_url', None)
+        if playlist_url:
+            try:
+                mock_interaction = MockInteraction(channel, voice_channel)
+                await bot.music_player.join_and_play(mock_interaction, playlist_url)
+                logger.info("Started playing music from playlist")
+            except Exception as e:
+                logger.error(f"Error playing music: {e}", exc_info=True)
+                await channel.send(f"⚠️ Failed to play music: {str(e)}")
+        else:
+            logger.info("No playlist URL configured, skipping music playback")
+            
     except Exception as e:
-        logger.error(f"Error in daily content generation: {e}", exc_info=True)
+        error_msg = f"Error in daily content generation: {e}"
+        logger.error(error_msg, exc_info=True)
+        try:
+            await channel.send(f"⚠️ {error_msg}")
+        except:
+            pass
