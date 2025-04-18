@@ -26,6 +26,8 @@ class PropagandaBot(commands.Bot):
 
         super().__init__(command_prefix=None, intents=intents)
 
+        self.tree.clear_commands(guild=None)
+        logger.info("Cleared all existing commands")
         # Store bot configuration
         self.propaganda_config = PropagandaConfig()
 
@@ -49,32 +51,37 @@ class PropagandaBot(commands.Bot):
 
     async def setup_commands(self):
         # Clear old commands first
-        self.tree.clear_commands(guild=None)
         await self.tree.sync()
-        logger.info("Cleared all existing commands")
 
-        @self.tree.command(name="play", description="Play a YouTube URL in your voice channel")
+        @self.tree.command(
+            name="play",
+            description="Play a YouTube URL in your voice channel")
         async def play(interaction: discord.Interaction, url: str):
             if not interaction.user or not interaction.user.voice:
-                await interaction.response.send_message("You must be in a voice channel to use this command!")
+                await interaction.response.send_message(
+                    "You must be in a voice channel to use this command!")
                 return
-            
+
             try:
                 await interaction.response.defer()
                 await self.music_player.join_and_play(interaction, url)
             except Exception as e:
-                await interaction.followup.send(f"Error playing music: {str(e)}")
+                await interaction.followup.send(
+                    f"Error playing music: {str(e)}")
                 logger.error(f"Error in play command: {e}", exc_info=True)
 
         @self.tree.command(name="leave", description="Leave the voice channel")
         async def leave(interaction: discord.Interaction):
             if interaction.guild_id in self.music_player.voice_clients:
-                voice_client = self.music_player.voice_clients[interaction.guild_id]
+                voice_client = self.music_player.voice_clients[
+                    interaction.guild_id]
                 await voice_client.disconnect()
                 del self.music_player.voice_clients[interaction.guild_id]
-                await interaction.response.send_message("Left the voice channel!")
+                await interaction.response.send_message(
+                    "Left the voice channel!")
             else:
-                await interaction.response.send_message("I'm not in a voice channel!")
+                await interaction.response.send_message(
+                    "I'm not in a voice channel!")
 
         @self.tree.command(
             name="generate",
