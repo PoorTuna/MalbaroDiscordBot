@@ -1,6 +1,7 @@
+
 # Discord Propaganda Bot
 
-A Discord bot that generates and posts propaganda-style images on a schedule, with music playback capabilities.
+A Discord bot that generates and posts propaganda-style images on a schedule, with music playback capabilities and CS2 game monitoring features.
 
 ## System Requirements
 
@@ -30,12 +31,13 @@ Configure the bot's behavior with this file. Example configuration:
         "timezone": "Asia/Jerusalem",
         "poster_output_channel_id": 123456789012345678,
         "voice_channel_id": 123456789012345678,
-        "youtube_playlist_url": "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID"
+        "youtube_playlist_url": "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID",
+        "steam_ids": ["76561198244212404"],
+        "cs2_alert_video_url": "https://www.youtube.com/watch?v=YOUR_ALERT_VIDEO_ID"
     },
     "text_prompt": "A vintage military recruitment poster featuring [your description]",
     "poster_caption": "A True Malborian Culture Piece:",
-    "max_retries": 3,
-    "youtube_playlist_url": "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID"
+    "max_retries": 3
 }
 ```
 
@@ -44,19 +46,27 @@ Store your API tokens in this file. Example configuration:
 ```json
 {
     "discord_token": "your_discord_bot_token_here",
-    "wavespeed_tokens": ["token1", "token2", "token3"]
+    "wavespeed_tokens": ["token1", "token2", "token3"],
+    "steam_api_key": "your_steam_api_key_here"
 }
 ```
 
-## Setup and Running
+## Features
 
-1. Install the required system dependencies
-2. Configure your tokens in `tokens_config.json`
-3. Configure bot settings in `propaganda_config.json`
-4. Run the bot:
-   ```bash
-   python main.py
-   ```
+### Propaganda Generation
+- Scheduled daily propaganda poster generation
+- Custom text prompts and captions
+- AI-powered image generation
+
+### Music System
+- YouTube playlist support
+- Voice channel integration
+- Background music during events
+
+### CS2 Game Monitoring
+- Steam profile monitoring
+- Custom alert videos when users start playing CS2
+- Automatic voice channel notifications
 
 ## Bot Commands
 
@@ -87,7 +97,8 @@ The bot includes comprehensive error handling for:
 
 ## Important Notes
 
-- Keep your Discord and WaveSpeed tokens secure
+- Keep your Discord, Steam and WaveSpeed tokens secure
 - Ensure proper permissions for the bot in your Discord server
 - The bot requires both text and voice channel permissions for full functionality
+- Steam monitoring requires valid Steam API key and Steam IDs
 - Image generation depends on WaveSpeed API availability
