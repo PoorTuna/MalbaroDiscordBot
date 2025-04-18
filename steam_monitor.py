@@ -76,10 +76,27 @@ class SteamMonitor:
                 voice_channel = self.bot.get_channel(voice_channel_id)
                 if voice_channel:
                     logger.info(f"Playing CS2 alert video in channel {voice_channel.name}")
+                    # Connect to voice channel first
+                    voice_client = await voice_channel.connect()
+                    self.bot.music_player.voice_clients[voice_channel.guild.id] = voice_client
+                    
+                    # Play the alert
                     await self.bot.music_player.join_and_play(None, video_url, force_voice_channel=True)
+                    
+                    # Cleanup after playing
+                    if voice_channel.guild.id in self.bot.music_player.voice_clients:
+                        await self.bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
+                        del self.bot.music_player.voice_clients[voice_channel.guild.id]
                 else:
                     logger.warning(f"Could not find voice channel with ID {voice_channel_id}")
             else:
                 logger.warning("Voice channel or CS2 alert video URL not configured")
         except Exception as e:
             logger.error(f"Error playing CS2 alert: {e}")
+            # Ensure cleanup on error
+            try:
+                if voice_channel and voice_channel.guild.id in self.bot.music_player.voice_clients:
+                    await self.bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
+                    del self.bot.music_player.voice_clients[voice_channel.guild.id]
+            except:
+                pass
