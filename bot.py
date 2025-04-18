@@ -45,6 +45,8 @@ class PropagandaBot(commands.Bot):
 
     async def setup_hook(self):
         """Called when the bot is starting up."""
+        # Clear existing commands
+        self.tree.clear_commands(guild=None)
         # Register commands
         @self.tree.command(name="generate", description="Generate a propaganda poster immediately")
         async def generate(interaction: discord.Interaction):
