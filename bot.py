@@ -48,11 +48,23 @@ class PropagandaBot(commands.Bot):
         await self.setup_commands()
 
     async def setup_commands(self):
+        # Clear old commands first
+        self.tree.clear_commands(guild=None)
+        await self.tree.sync()
+        logger.info("Cleared all existing commands")
 
         @self.tree.command(name="play", description="Play a YouTube URL in your voice channel")
         async def play(interaction: discord.Interaction, url: str):
-            await interaction.response.defer()
-            await self.music_player.join_and_play(interaction, url)
+            if not interaction.user or not interaction.user.voice:
+                await interaction.response.send_message("You must be in a voice channel to use this command!")
+                return
+            
+            try:
+                await interaction.response.defer()
+                await self.music_player.join_and_play(interaction, url)
+            except Exception as e:
+                await interaction.followup.send(f"Error playing music: {str(e)}")
+                logger.error(f"Error in play command: {e}", exc_info=True)
 
         @self.tree.command(name="leave", description="Leave the voice channel")
         async def leave(interaction: discord.Interaction):
