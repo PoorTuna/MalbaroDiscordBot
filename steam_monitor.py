@@ -25,7 +25,12 @@ class SteamMonitor:
             self.is_monitoring = True
             self.client.anonymous_login()
             
-            while self.is_monitoring:
+            # Create monitoring task
+            asyncio.create_task(self._monitor_loop())
+            
+    async def _monitor_loop(self):
+        """Background task for Steam monitoring."""
+        while self.is_monitoring:
                 for steam_id in self.watching_steam_ids:
                     try:
                         user = self.client.get_user(steam_id)
