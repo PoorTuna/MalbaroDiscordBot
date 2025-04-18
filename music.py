@@ -16,10 +16,18 @@ class MusicPlayer:
     async def join_and_play(self,
                             interaction: discord.Interaction,
                             url: str = None):
-        if not interaction.user or not interaction.user.voice:
-            await interaction.followup.send(
-                "You must be in a voice channel to use this command!")
-            return
+        try:
+            if not interaction.user or not interaction.user.voice:
+                await interaction.followup.send(
+                    "You must be in a voice channel to use this command!")
+                return
+
+            # Check if ffmpeg is installed
+            import shutil
+            if not shutil.which('ffmpeg'):
+                await interaction.followup.send(
+                    "Error: ffmpeg is not installed. Please contact the bot administrator.")
+                return
 
         try:
             channel = interaction.user.voice.channel
