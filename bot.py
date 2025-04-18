@@ -25,8 +25,7 @@ class PropagandaBot(commands.Bot):
         from music import MusicPlayer
         self.music_player = MusicPlayer()
 
-        # Keep the prefix commands for backward compatibility
-        super().__init__(command_prefix='!', intents=intents)
+        super().__init__(command_prefix=None, intents=intents)
 
         # Store bot configuration
         self.propaganda_config = PropagandaConfig()
@@ -72,14 +71,8 @@ class PropagandaBot(commands.Bot):
             if message.author == self.user:
                 return
 
-            # Log potential command messages
-            if message.content.startswith('!'):
-                logger.info(
-                    f"Command message received from {message.author} in {message.channel}: {message.content}"
-                )
-
-            # Process commands as usual
-            await self.process_commands(message)
+            # Only handle app commands, no prefix commands
+            pass
 
         async def on_app_command_error(interaction: discord.Interaction,
                                        error: app_commands.AppCommandError):
