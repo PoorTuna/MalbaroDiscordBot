@@ -88,13 +88,19 @@ async def generate_daily_content(bot):
         
         if voice_channel and playlist_url:
             try:
-                # Connect to voice channel directly
+                # Connect to voice channel and wait for it to be ready
                 voice_client = await voice_channel.connect()
+                await asyncio.sleep(1)  # Wait for voice client to stabilize
                 bot.music_player.voice_clients[voice_channel.guild.id] = voice_client
                 
                 # Play random song from playlist
                 await bot.music_player.join_and_play(None, playlist_url, force_voice_channel=True)
                 logger.info(f"Successfully started playing music in voice channel {voice_channel.name}")
+                
+                # Disconnect after playing
+                if voice_channel.guild.id in bot.music_player.voice_clients:
+                    await bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
+                    del bot.music_player.voice_clients[voice_channel.guild.id]
             except Exception as e:
                 logger.error(f"Error playing music: {e}")
         else:

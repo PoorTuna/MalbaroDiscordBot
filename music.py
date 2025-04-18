@@ -75,9 +75,11 @@ class MusicPlayer:
                         # Get audio stream URL
                         audio_url = info['url']
 
-                        # Create audio source and play
+                        # Create audio source and play with delay
+                        await asyncio.sleep(1)  # Wait before playing
                         source = await discord.FFmpegOpusAudio.from_probe(
-                            audio_url)
+                            audio_url,
+                            before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5")
                         voice_client.play(source)
 
                         # Send confirmation message if interaction is available
