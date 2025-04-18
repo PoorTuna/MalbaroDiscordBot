@@ -45,13 +45,6 @@ class PropagandaBot(commands.Bot):
 
     async def setup_hook(self):
         """Called when the bot is starting up."""
-        pass
-
-    async def on_ready(self):
-        """Called when the bot is ready and connected to Discord."""
-        logger.info(f'Logged in as {self.user.name} (ID: {self.user.id})')
-        logger.info('------')
-
         # Register commands
         @self.tree.command(name="generate", description="Generate a propaganda poster immediately")
         async def generate(interaction: discord.Interaction):
@@ -101,12 +94,12 @@ class PropagandaBot(commands.Bot):
             await interaction.response.send_message(embed=embed)
 
         # Sync commands with Discord
-        try:
-            await self.tree.sync()
-            logger.info("Successfully synced commands with Discord")
-        except Exception as e:
-            logger.error(f"Failed to sync commands: {e}")
+        await self.tree.sync()
 
+    async def on_ready(self):
+        """Called when the bot is ready and connected to Discord."""
+        logger.info(f'Logged in as {self.user.name} (ID: {self.user.id})')
+        logger.info('------')
         # Set up the scheduled task for daily poster generation
         setup_scheduler(self)
 
