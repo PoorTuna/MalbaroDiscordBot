@@ -20,7 +20,7 @@ class PropagandaBot(commands.Bot):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.voice_states = True
-        
+
         from music import MusicPlayer
         self.music_player = MusicPlayer()
 
@@ -342,7 +342,7 @@ class PropagandaBot(commands.Bot):
             name="play",
             description="Play a random song from the configured playlist"
         )
-        async def play(interaction: discord.Interaction):
+        async def play(self, interaction: discord.Interaction):
             """Play a random song from the playlist."""
             await interaction.response.send_message("🎵 Playing a random song from the playlist...")
             await self.music_player.join_and_play(interaction)
@@ -352,7 +352,7 @@ class PropagandaBot(commands.Bot):
             description="Play a specific YouTube URL"
         )
         @app_commands.describe(url="YouTube URL to play")
-        async def play_url(interaction: discord.Interaction, url: str):
+        async def play_url(self, interaction: discord.Interaction, url: str):
             """Play a specific YouTube URL."""
             await interaction.response.send_message(f"🎵 Playing: {url}")
             await self.music_player.join_and_play(interaction, url)
