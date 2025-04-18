@@ -69,13 +69,16 @@ class SteamMonitor:
     async def handle_cs2_start(self):
         """Handle when a user starts playing CS2."""
         try:
-            voice_channel_id = self.bot.propaganda_config.propaganda_scheduler.get("voice_channel_id")
-            video_url = self.bot.propaganda_config.propaganda_scheduler.get("cs2_alert_video_url")
+            voice_channel_id = self.bot.propaganda_config.propaganda_scheduler["voice_channel_id"]
+            video_url = self.bot.propaganda_config.propaganda_scheduler["cs2_alert_video_url"]
 
             if voice_channel_id and video_url:
                 voice_channel = self.bot.get_channel(voice_channel_id)
                 if voice_channel:
+                    logger.info(f"Playing CS2 alert video in channel {voice_channel.name}")
                     await self.bot.music_player.join_and_play(None, video_url, force_voice_channel=True)
+                else:
+                    logger.warning(f"Could not find voice channel with ID {voice_channel_id}")
             else:
                 logger.warning("Voice channel or CS2 alert video URL not configured")
         except Exception as e:
