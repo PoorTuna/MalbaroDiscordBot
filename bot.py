@@ -184,7 +184,7 @@ class PropagandaBot(commands.Bot):
             name="generate",
             description="Generate a propaganda poster immediately"
         )
-        async def generate(self, interaction):
+        async def generate(self, interaction: discord.Interaction):
             """Generate and post a propaganda poster immediately."""
             await interaction.response.send_message("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
             await self.generate_and_post_poster(interaction.channel)
