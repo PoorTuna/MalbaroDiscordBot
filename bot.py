@@ -253,7 +253,7 @@ class PropagandaBot(commands.Bot):
             name="show_config",
             description="Show current propaganda poster configuration"
         )
-        async def show_config(interaction: discord.Interaction):
+        async def show_config(self, interaction: discord.Interaction):
             """Display the current configuration."""
             config = self.propaganda_config
             channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
@@ -496,7 +496,7 @@ class PropagandaBot(commands.Bot):
                     description="Set the caption text for generated posters"
                 )
         @app_commands.describe(caption="The caption text that accompanies each poster")
-        async def set_poster_caption(interaction: discord.Interaction, caption: str):
+        async def set_poster_caption(self, interaction: discord.Interaction, caption: str):
             """Set the poster caption text."""
             self.propaganda_config.poster_caption = caption
             self.propaganda_config.save_config()
