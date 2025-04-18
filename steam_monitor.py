@@ -30,25 +30,26 @@ class SteamMonitor:
             
     async def _monitor_loop(self):
         """Background task for Steam monitoring."""
-        while self.is_monitoring:
-                for steam_id in self.watching_steam_ids:
-                    try:
-                        user = self.client.get_user(steam_id)
-                        is_playing_cs2 = user.game_id == 730
-
-                        # Only trigger if user wasn't playing CS2 before but is now
-                        if (steam_id in self.previous_statuses and 
-                            is_playing_cs2 and 
-                            not self.previous_statuses[steam_id]):
-                            logger.info(f"User {steam_id} started playing CS2!")
-                            await self.handle_cs2_start()
-
-                        self.previous_statuses[steam_id] = is_playing_cs2
-                    except Exception as e:
-                        logger.error(f"Error checking Steam ID {steam_id}: {e}")
-
-                await asyncio.sleep(30)  # Check every 30 seconds
-
+        try:
+            while self.is_monitoring:
+                    for steam_id in self.watching_steam_ids:
+                        try:
+                            user = self.client.get_user(steam_id)
+                            is_playing_cs2 = user.game_id == 730
+    
+                            # Only trigger if user wasn't playing CS2 before but is now
+                            if (steam_id in self.previous_statuses and 
+                                is_playing_cs2 and 
+                                not self.previous_statuses[steam_id]):
+                                logger.info(f"User {steam_id} started playing CS2!")
+                                await self.handle_cs2_start()
+    
+                            self.previous_statuses[steam_id] = is_playing_cs2
+                        except Exception as e:
+                            logger.error(f"Error checking Steam ID {steam_id}: {e}")
+    
+                    await asyncio.sleep(30)  # Check every 30 seconds
+        
         except Exception as e:
             logger.error(f"Error in Steam monitoring: {e}")
             self.is_monitoring = False
