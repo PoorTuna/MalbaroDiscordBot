@@ -184,20 +184,20 @@ class PropagandaBot(commands.Bot):
             name="generate",
             description="Generate a propaganda poster immediately"
         )
-        async def generate(self, interaction: discord.Interaction):
+        def generate(self, interaction: discord.Interaction):
             """Generate and post a propaganda poster immediately."""
-            await interaction.response.send_message("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
-            await self.generate_and_post_poster(interaction.channel)
+            interaction.response.send_message("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
+            self.generate_and_post_poster(interaction.channel)
 
         # Register the set_channel command
         @self.tree.command(
             name="set_channel",
             description="Set the current channel for daily propaganda posters"
         )
-        async def set_channel(self, interaction: discord.Interaction):
+        def set_channel(self, interaction: discord.Interaction):
             """Set the current channel as the destination for daily posters."""
             self.propaganda_config.set_channel_id(interaction.channel_id)
-            await interaction.response.send_message(f"This channel has been set for daily propaganda posters.")
+            interaction.response.send_message(f"This channel has been set for daily propaganda posters.")
 
         # Register the set_time command
         @self.tree.command(
