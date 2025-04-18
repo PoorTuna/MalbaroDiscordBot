@@ -26,7 +26,7 @@
                         <h1 class="text-center">Discord Propaganda Poster Bot</h1>
                     </div>
                     <div class="card-body">
-                        <p class="lead">This bot generates propaganda-style posters using OpenAI's GPT-4o and DALL-E models, and posts them to your Discord server.</p>
+                        <p class="lead">This bot generates propaganda-style posters using AI image generation and posts them to your Discord server.</p>
                         
                         <div class="alert alert-info">
                             <h5>Bot Commands:</h5>
@@ -34,17 +34,12 @@
                                 <li><code>/generate</code> - Generate a propaganda poster immediately</li>
                                 <li><code>/set_channel</code> - Set the current channel for daily posters</li>
                                 <li><code>/set_time</code> - Set the daily posting time (format: HH:MM in UTC)</li>
-                                <li><code>/set_theme</code> - Set the theme for propaganda posters</li>
-                                <li><code>/set_style</code> - Set the art style for propaganda posters</li>
+                                <li><code>/set_timezone</code> - Set the timezone for propaganda poster scheduling</li>
                                 <li><code>/set_text_prompt</code> - Set the text prompt for generating poster text</li>
-                                <li><code>/set_segmind_key</code> - Add a Segmind API key to the rotation (DM only)</li>
                                 <li><code>/set_discord_token</code> - Set the Discord bot token (DM only)</li>
                                 <li><code>/show_config</code> - Show the current bot configuration</li>
+                                <li><code>/help</code> - Display help information</li>
                             </ul>
-                            <div class="mt-2">
-                                <p class="fw-bold mb-1">New and Improved!</p>
-                                <p class="mb-0">The bot now uses Discord's slash command system. Type <code>/</code> in your Discord server to see the commands with autocomplete and descriptions!</p>
-                            </div>
                         </div>
                         
                         <div class="text-center mt-4">
@@ -93,7 +88,6 @@
                     statusDiv.className = 'bot-status alert alert-secondary';
                 }
                 
-                // Continue checking status every 2 seconds if the bot is starting
                 if (data.status === 'Starting...') {
                     setTimeout(checkBotStatus, 2000);
                 }
@@ -103,9 +97,7 @@
             });
         }
         
-        // Check initial status
         checkBotStatus();
     </script>
 </body>
 </html>
-        
