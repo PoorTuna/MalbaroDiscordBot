@@ -103,7 +103,8 @@ class PropagandaBot(commands.Bot):
 
             # Add all commands to the bot
             self.tree.add_command(poster_group)
-            await self.tree.sync()  # Sync commands with Discord
+            synced = await self.tree.sync()  # Sync commands with Discord
+            logger.info(f"Synced commands: {[cmd.name for cmd in synced]}")
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
