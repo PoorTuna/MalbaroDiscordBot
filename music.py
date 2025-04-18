@@ -1,3 +1,4 @@
+
 import discord
 import yt_dlp
 import asyncio
@@ -16,18 +17,17 @@ class MusicPlayer:
     async def join_and_play(self,
                             interaction: discord.Interaction,
                             url: str = None):
-        try:
-            if not interaction.user or not interaction.user.voice:
-                await interaction.followup.send(
-                    "You must be in a voice channel to use this command!")
-                return
+        if not interaction.user or not interaction.user.voice:
+            await interaction.followup.send(
+                "You must be in a voice channel to use this command!")
+            return
 
-            # Check if ffmpeg is installed
-            import shutil
-            if not shutil.which('ffmpeg'):
-                await interaction.followup.send(
-                    "Error: ffmpeg is not installed. Please contact the bot administrator.")
-                return
+        # Check if ffmpeg is installed
+        import shutil
+        if not shutil.which('ffmpeg'):
+            await interaction.followup.send(
+                "Error: ffmpeg is not installed. Please contact the bot administrator.")
+            return
 
         try:
             channel = interaction.user.voice.channel
@@ -79,12 +79,12 @@ class MusicPlayer:
                     await interaction.followup.send(
                         "No URL provided and playlist is empty!")
 
-            # Disconnect after playing
-            await voice_client.disconnect()
-            del self.voice_clients[interaction.guild.id]
+                # Disconnect after playing
+                await voice_client.disconnect()
+                del self.voice_clients[interaction.guild.id]
 
         except Exception as e:
             await interaction.followup.send(f"Error: {str(e)}")
             if interaction.guild.id in self.voice_clients:
-                await voice_client.disconnect()
+                await self.voice_clients[interaction.guild.id].disconnect()
                 del self.voice_clients[interaction.guild.id]
