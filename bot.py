@@ -47,11 +47,12 @@ class PropagandaBot(commands.Bot):
 
     async def setup_hook(self):
         """Called when the bot is starting up."""
+        # Clear old commands first
+        await self.tree.sync()
+        logger.info("Cleared all existing commands")
         await self.setup_commands()
 
     async def setup_commands(self):
-        # Clear old commands first
-        await self.tree.sync()
 
         @self.tree.command(
             name="play",
