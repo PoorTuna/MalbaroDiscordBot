@@ -45,9 +45,16 @@ class PropagandaBot(commands.Bot):
 
     async def setup_hook(self):
         """Called when the bot is starting up."""
-        # Register slash commands
-        synced_commands = await self.tree.sync()
-        logger.info(f'Commands registered in setup hook {synced_commands=}')
+        # Register command decorators
+        for command in self.tree.walk_commands():
+            logger.info(f"Found command: {command.name}")
+        
+        # Sync commands with Discord
+        try:
+            synced = await self.tree.sync()
+            logger.info(f"Synced {len(synced)} commands")
+        except Exception as e:
+            logger.error(f"Failed to sync commands: {e}")
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
