@@ -22,11 +22,16 @@ pip install -r requirements.txt
 Configure the bot's behavior with this file. Example configuration:
 ```json
 {
-    "voice_channel_id": 123456789012345678,
-    "channel_id": 123456789012345678,
-    "hour": 12,
-    "minute": 15,
-    "timezone": "Asia/Jerusalem",
+    "propaganda_scheduler": {
+        "time": {
+            "hour": 12,
+            "minute": 15
+        },
+        "timezone": "Asia/Jerusalem",
+        "poster_output_channel_id": 123456789012345678,
+        "voice_channel_id": 123456789012345678,
+        "youtube_playlist_url": "https://www.youtube.com/playlist?list=YOUR_PLAYLIST_ID"
+    },
     "text_prompt": "A vintage military recruitment poster featuring [your description]",
     "poster_caption": "A True Malborian Culture Piece:",
     "max_retries": 3,

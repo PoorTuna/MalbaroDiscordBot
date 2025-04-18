@@ -99,7 +99,8 @@ class PropagandaBot(commands.Bot):
             name="set_channel",
             description="Set the current channel for propaganda posters")
         async def set_channel(interaction: discord.Interaction):
-            self.propaganda_config.set_channel_id(interaction.channel_id)
+            self.propaganda_config.propaganda_scheduler[
+                "poster_output_channel_id"] = interaction.channel_id
             await interaction.response.send_message(
                 "Channel set for propaganda posters.")
 
@@ -123,7 +124,10 @@ class PropagandaBot(commands.Bot):
             try:
                 hour, minute = map(int, time.split(':'))
                 if 0 <= hour < 24 and 0 <= minute < 60:
-                    self.propaganda_config.set_post_time(hour, minute)
+                    self.propaganda_config.propaganda_scheduler[
+                        "time"]["hour"] = hour
+                    self.propaganda_config.propaganda_scheduler[
+                        "time"]["minute"] = minute
                     await interaction.response.send_message(
                         f"Post time set to {time}")
                 else:
@@ -151,7 +155,7 @@ class PropagandaBot(commands.Bot):
                            description="Show current configuration")
         async def show_config(interaction: discord.Interaction):
             config = self.propaganda_config
-            channel_mention = f"<#{config.channel_id}>" if config.channel_id else "Not set"
+            channel_mention = f"<#{config.propaganda_scheduler['poster_output_channel_id']}>" if config.propaganda_scheduler.get('poster_output_channel_id') else "Not set"
 
             # Truncate text prompt if too long
             text_prompt = config.text_prompt
@@ -164,7 +168,7 @@ class PropagandaBot(commands.Bot):
             embed.add_field(
                 name="Post Time",
                 value=
-                f"{config.hour:02d}:{config.minute:02d} {config.timezone}",
+                f"{config.propaganda_scheduler['time']['hour']:02d}:{config.propaganda_scheduler['time']['minute']:02d} {config.timezone}",
                 inline=True)
             embed.add_field(name="Text Prompt",
                             value=text_prompt,
@@ -257,7 +261,10 @@ class PropagandaBot(commands.Bot):
         try:
             hour, minute = map(int, time_str.split(':'))
             if 0 <= hour < 24 and 0 <= minute < 60:
-                self.propaganda_config.set_post_time(hour, minute)
+                self.propaganda_config.propaganda_scheduler[
+                    "time"]["hour"] = hour
+                self.propaganda_config.propaganda_scheduler[
+                    "time"]["minute"] = minute
                 await response_handler(
                     f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.timezone}."
                 )
@@ -271,8 +278,10 @@ class PropagandaBot(commands.Bot):
 
     async def generate_and_post_poster(self, channel=None):
         """Generate a propaganda poster and post it to the specified channel."""
-        if channel is None and self.propaganda_config.channel_id:
-            channel = self.get_channel(self.propaganda_config.channel_id)
+        channel_id = self.propaganda_config.propaganda_scheduler.get(
+            "poster_output_channel_id")
+        if channel is None and channel_id:
+            channel = self.get_channel(channel_id)
 
         if not channel:
             logger.error("No channel set for posting propaganda poster")

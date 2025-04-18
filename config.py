@@ -15,15 +15,19 @@ class PropagandaConfig:
         # Get config file path from environment variable or use default
         config_dir = os.getenv("PROPAGANDA_CONFIG_DIR", '')
         self.config_file = os.path.join(config_dir, self.DEFAULT_CONFIG_FILE)
-        self.channel_id = None  # Discord channel ID to post propaganda to
-        self.voice_channel_id = None  # Discord voice channel ID for music
-        self.hour = 12          # Hour of the day to post
-        self.minute = 0         # Minute of the hour to post
-        self.timezone = 'Asia/Jerusalem'  # Timezone for scheduling
+        self.propaganda_scheduler = {
+            "time": {
+                "hour": 12,
+                "minute": 0
+            },
+            "timezone": 'Asia/Jerusalem',
+            "poster_output_channel_id": None,
+            "voice_channel_id": None,
+            "youtube_playlist_url": ""
+        }
         self.text_prompt = "Generate a short, inspiring slogan for a propaganda poster about technology and progress"
-        self.poster_caption = "A True Malborian Culture Piece:" # Added default caption
-        self.max_retries = 3  # Default number of retries for image generation
-        self.youtube_playlist_url = ""  # URL for propaganda music playlist
+        self.poster_caption = "A True Malborian Culture Piece:"
+        self.max_retries = 3
 
         # Load saved configuration if it exists
         self.load_config()
@@ -52,14 +56,10 @@ class PropagandaConfig:
         """Save the current configuration to a file."""
         try:
             config_data = {
-                "channel_id": self.channel_id,
-                "hour": self.hour,
-                "minute": self.minute,
-                "timezone": self.timezone,
+                "propaganda_scheduler": self.propaganda_scheduler,
                 "text_prompt": self.text_prompt,
                 "poster_caption": self.poster_caption,
-                "max_retries": self.max_retries,
-                "youtube_playlist_url": getattr(self, 'youtube_playlist_url', '')
+                "max_retries": self.max_retries
             }
 
             with open(self.config_file, 'w') as file:
@@ -71,13 +71,13 @@ class PropagandaConfig:
 
     def set_channel_id(self, channel_id):
         """Set the channel ID for posting propaganda."""
-        self.channel_id = channel_id
+        self.propaganda_scheduler["poster_output_channel_id"] = channel_id
         self.save_config()
 
     def set_post_time(self, hour, minute):
-        """Set the time for daily propaganda posts (in UTC)."""
-        self.hour = hour
-        self.minute = minute
+        """Set the time for daily propaganda posts."""
+        self.propaganda_scheduler["time"]["hour"] = hour
+        self.propaganda_scheduler["time"]["minute"] = minute
         self.save_config()
 
     def set_theme(self, theme):

@@ -27,9 +27,9 @@ def setup_scheduler(bot):
     setup_scheduler.current_scheduler = scheduler
 
     # Get the configured time and timezone from the bot's propaganda_config
-    hour = bot.propaganda_config.hour
-    minute = bot.propaganda_config.minute
-    timezone = pytz.timezone(bot.propaganda_config.timezone)
+    hour = bot.propaganda_config.propaganda_scheduler["time"]["hour"]
+    minute = bot.propaganda_config.propaganda_scheduler["time"]["minute"]
+    timezone = pytz.timezone(bot.propaganda_config.propaganda_scheduler["timezone"])
 
     # Check if we missed today's run within last 5 minutes
     now = datetime.now(timezone)
