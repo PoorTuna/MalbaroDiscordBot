@@ -4,7 +4,9 @@ import asyncio
 
 logger = logging.getLogger(__name__)
 
+
 class SteamMonitor:
+
     def __init__(self, bot):
         self.bot = bot
         self.watching_steam_ids = set()
@@ -14,7 +16,8 @@ class SteamMonitor:
     async def start(self):
         """Start monitoring all configured Steam profiles."""
         try:
-            steam_ids = self.bot.propaganda_config.propaganda_scheduler.get("steam_ids", [])
+            steam_ids = self.bot.propaganda_config.propaganda_scheduler.get(
+                "steam_ids", [])
             if not steam_ids:
                 logger.warning("No Steam IDs configured for monitoring")
                 return
@@ -46,18 +49,24 @@ class SteamMonitor:
                                 game_id = player.get('gameid')
                                 is_playing_cs2 = game_id == '730'  # CS2/CSGO game ID
 
-                                was_playing_cs2 = self.previous_statuses.get(steam_id, False)
+                                was_playing_cs2 = self.previous_statuses.get(
+                                    steam_id, False)
 
                                 if is_playing_cs2 and not was_playing_cs2:
-                                    logger.info(f"User {steam_id} started playing CS2!")
+                                    logger.info(
+                                        f"User {steam_id} started playing CS2!"
+                                    )
                                     await self.handle_cs2_start()
                                 elif not is_playing_cs2 and was_playing_cs2:
-                                    logger.info(f"User {steam_id} stopped playing CS2.")
+                                    logger.info(
+                                        f"User {steam_id} stopped playing CS2."
+                                    )
                                     # Reset status when they stop playing
                                     self.previous_statuses[steam_id] = False
                                 else:
                                     # Always update the status
-                                    self.previous_statuses[steam_id] = is_playing_cs2
+                                    self.previous_statuses[
+                                        steam_id] = is_playing_cs2
 
                 await asyncio.sleep(30)  # Check every 30 seconds
 
@@ -72,34 +81,47 @@ class SteamMonitor:
     async def handle_cs2_start(self):
         """Handle when a user starts playing CS2."""
         try:
-            voice_channel_id = self.bot.propaganda_config.propaganda_scheduler["voice_channel_id"]
-            video_url = self.bot.propaganda_config.propaganda_scheduler["cs2_alert_video_url"]
+            voice_channel_id = self.bot.propaganda_config.propaganda_scheduler[
+                "voice_channel_id"]
+            video_url = self.bot.propaganda_config.propaganda_scheduler[
+                "cs2_alert_video_url"]
 
             if voice_channel_id and video_url:
                 voice_channel = self.bot.get_channel(voice_channel_id)
                 if voice_channel:
-                    logger.info(f"Playing CS2 alert video in channel {voice_channel.name}")
+                    logger.info(
+                        f"Playing CS2 alert video in channel {voice_channel.name}"
+                    )
                     # Connect to voice channel first
                     voice_client = await voice_channel.connect()
-                    self.bot.music_player.voice_clients[voice_channel.guild.id] = voice_client
-                    
+                    self.bot.music_player.voice_clients[
+                        voice_channel.guild.id] = voice_client
+
                     # Play the alert
-                    await self.bot.music_player.join_and_play(None, video_url, force_voice_channel=True)
-                    
+                    await self.bot.music_player.join_and_play(
+                        None, video_url, force_voice_channel=True)
+
                     # Cleanup after playing
                     if voice_channel.guild.id in self.bot.music_player.voice_clients:
-                        await self.bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
-                        del self.bot.music_player.voice_clients[voice_channel.guild.id]
+                        await self.bot.music_player.voice_clients[
+                            voice_channel.guild.id].disconnect()
+                        del self.bot.music_player.voice_clients[
+                            voice_channel.guild.id]
                 else:
-                    logger.warning(f"Could not find voice channel with ID {voice_channel_id}")
+                    logger.warning(
+                        f"Could not find voice channel with ID {voice_channel_id}"
+                    )
             else:
-                logger.warning("Voice channel or CS2 alert video URL not configured")
+                logger.warning(
+                    "Voice channel or CS2 alert video URL not configured")
         except Exception as e:
             logger.error(f"Error playing CS2 alert: {e}")
             # Ensure cleanup on error
             try:
                 if voice_channel and voice_channel.guild.id in self.bot.music_player.voice_clients:
-                    await self.bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
-                    del self.bot.music_player.voice_clients[voice_channel.guild.id]
+                    await self.bot.music_player.voice_clients[
+                        voice_channel.guild.id].disconnect()
+                    del self.bot.music_player.voice_clients[
+                        voice_channel.guild.id]
             except:
                 pass
