@@ -126,7 +126,7 @@ class PropagandaBot(commands.Bot):
         @self.command(name="generate", help="Generate a propaganda poster immediately")
         async def generate(ctx):
             """Generate and post a propaganda poster immediately."""
-            await ctx.send("Generating propaganda poster... This may take a moment.")
+            await ctx.send("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
             await self.generate_and_post_poster(ctx.channel)
 
         @self.command(name="set_channel", help="Set the channel for daily propaganda posters")
@@ -182,7 +182,7 @@ class PropagandaBot(commands.Bot):
         )
         async def generate(interaction: discord.Interaction):
             """Generate and post a propaganda poster immediately."""
-            await interaction.response.send_message("Generating propaganda poster... This may take a moment.")
+            await interaction.response.send_message("A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬.")
             await self.generate_and_post_poster(interaction.channel)
 
         # Register the set_channel command
