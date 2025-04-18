@@ -47,10 +47,13 @@ class PropagandaBot(commands.Bot):
 
     async def setup_hook(self):
         """Called when the bot is starting up."""
-        # Clear old commands first
-        await self.tree.sync()
+
         logger.info("Cleared all existing commands")
         await self.setup_commands()
+        synced_commands = await self.tree.sync()
+        logger.info(
+            f"{len(synced_commands)} Commands synced with Discord {synced_commands=}"
+        )
 
     async def setup_commands(self):
 
@@ -161,11 +164,6 @@ class PropagandaBot(commands.Bot):
                             inline=False)
 
             await interaction.response.send_message(embed=embed)
-
-        synced_commands = await self.tree.sync()
-        logger.info(
-            f"{len(synced_commands)} Commands synced with Discord {synced_commands=}"
-        )
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
