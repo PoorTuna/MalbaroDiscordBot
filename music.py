@@ -16,8 +16,9 @@ class MusicPlayer:
 
     async def join_and_play(self,
                             interaction: discord.Interaction,
-                            url: str = None):
-        if not interaction.user or not interaction.user.voice:
+                            url: str = None,
+                            force_voice_channel: bool = False):
+        if not force_voice_channel and (not interaction.user or not interaction.user.voice):
             await interaction.followup.send(
                 "You must be in a voice channel to use this command!")
             return
