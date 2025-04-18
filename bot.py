@@ -46,8 +46,8 @@ class PropagandaBot(commands.Bot):
     async def setup_hook(self):
         """Called when the bot is starting up."""
         # Register slash commands
-        logger.info('hello world')
-        await self.register_commands()
+        await self.tree.sync()
+        logger.info('Commands registered in setup hook')
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
