@@ -33,3 +33,4 @@ ffmpegio-core==0.10.0
 ffmpeg==1.4
 steam
 steam
+python-eventemitter
