@@ -207,6 +207,8 @@ class PropagandaBot(commands.Bot):
                 hour, minute = map(int, time_str.split(':'))
                 if 0 <= hour < 24 and 0 <= minute < 60:
                     self.propaganda_config.set_post_time(hour, minute)
+                    from scheduler import setup_scheduler
+                    setup_scheduler(self)  # Restart scheduler with new time
                     await interaction.response.send_message(f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.timezone}.")
                 else:
                     await interaction.response.send_message("Invalid time format. Please use HH:MM in 24-hour format.")
