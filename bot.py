@@ -401,7 +401,7 @@ class PropagandaBot(commands.Bot):
                 # Create message with the poster
                 with open(image_url, 'rb') as f:
                     file = discord.File(f, filename='propaganda_poster.png')
-                    await channel.send(file=file, content=f"**{self.propaganda_config.poster_caption}**\n{poster_text}")
+                    await channel.send(file=file, content=f"**{self.propaganda_config.poster_caption}**")
 
                 # Clean up the temporary file
                 import os
