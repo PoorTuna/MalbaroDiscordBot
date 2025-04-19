@@ -58,7 +58,6 @@ def home():
     return render_template('index.html')
 
 
-@app.before_request
 @app.route('/start_bot', methods=['POST'])
 def start_bot():
     global bot_thread, bot_status
@@ -76,12 +75,12 @@ def start_bot():
     return jsonify({"status": "Bot already running"})
 
 
+def start_bot_automatically():
+    with app.test_client() as client:
+        client.post('/start_bot')
+
+
 @app.route('/bot_status')
 def get_bot_status():
     global bot_status
     return jsonify({"status": bot_status})
-
-
-if __name__ == "__main__":
-    start_bot()
-    app.run(host='0.0.0.0', port=5000)
