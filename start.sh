@@ -14,7 +14,7 @@ sudo apt install python3-pip -y
 
 # Install dependencies from requirements.txt
 echo "Installing Python dependencies..."
-pip install -r requirements.txt
+python3.11 -m pip install -r requirements.txt
 
 # Install ffmpeg
 echo "Installing ffmpeg..."
