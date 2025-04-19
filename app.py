@@ -58,6 +58,7 @@ def home():
     return render_template('index.html')
 
 
+@app.before_request
 @app.route('/start_bot', methods=['POST'])
 def start_bot():
     global bot_thread, bot_status
@@ -82,13 +83,5 @@ def get_bot_status():
 
 
 if __name__ == "__main__":
-    if not os.getenv('DISCORD_TOKEN'):
-        logger.error(
-            "Discord token not found. Please set DISCORD_TOKEN environment variable."
-        )
-        bot_status = "Error: Discord token not found"
-    else:
-        # Start the bot in a separate thread
-        start_bot()
-    # Run Flask app
+    start_bot()
     app.run(host='0.0.0.0', port=5000)
