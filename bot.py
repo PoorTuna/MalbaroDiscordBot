@@ -1,16 +1,15 @@
+import asyncio
 import os
-import logging
+from logging import getLogger
+
 import discord
 from discord import app_commands
 from discord.ext import commands
-from scheduler import setup_scheduler
-from config import PropagandaConfig
-from image_generation import generate_poster_image, generate_poster_text
-import pytz
-import json
-import asyncio
 
-logger = logging.getLogger(__name__)
+from config import PropagandaConfig
+from scheduler import setup_scheduler
+
+logger = getLogger(__name__)
 
 
 class PropagandaBot(commands.Bot):
@@ -37,146 +36,15 @@ class PropagandaBot(commands.Bot):
         self.tokens_config_path = os.path.join(tokens_config_dir,
                                                'tokens_config.json')
 
-        try:
-            with open(self.tokens_config_path, 'r') as f:
-                self.tokens_config = json.load(f)
-        except FileNotFoundError:
-            self.tokens_config = {}
-
         # Add event listeners for logging
         self.add_listeners()
 
     async def setup_hook(self):
         """Called when the bot is starting up."""
-
-        logger.info("Cleared all existing commands")
-        await self.setup_commands()
         synced_commands = await self.tree.sync()
         logger.info(
             f"{len(synced_commands)} Commands synced with Discord {synced_commands=}"
         )
-
-    async def setup_commands(self):
-
-        @self.tree.command(
-            name="play",
-            description="Play a YouTube URL in your voice channel")
-        async def play(interaction: discord.Interaction, url: str):
-            if not interaction.user or not interaction.user.voice:
-                await interaction.response.send_message(
-                    "You must be in a voice channel to use this command!")
-                return
-
-            try:
-                await interaction.response.defer()
-                await self.music_player.join_and_play(interaction, url)
-            except Exception as e:
-                await interaction.followup.send(
-                    f"Error playing music: {str(e)}")
-                logger.error(f"Error in play command: {e}", exc_info=True)
-
-        @self.tree.command(name="leave", description="Leave the voice channel")
-        async def leave(interaction: discord.Interaction):
-            if interaction.guild_id in self.music_player.voice_clients:
-                voice_client = self.music_player.voice_clients[
-                    interaction.guild_id]
-                await voice_client.disconnect()
-                del self.music_player.voice_clients[interaction.guild_id]
-                await interaction.response.send_message(
-                    "Left the voice channel!")
-            else:
-                await interaction.response.send_message(
-                    "I'm not in a voice channel!")
-
-        @self.tree.command(
-            name="generate",
-            description="Generate a propaganda poster immediately")
-        async def generate(interaction: discord.Interaction):
-            await interaction.response.send_message(
-                "Generating your propaganda poster...")
-            await self.generate_and_post_poster(interaction.channel)
-
-        @self.tree.command(
-            name="set_channel",
-            description="Set the current channel for propaganda posters")
-        async def set_channel(interaction: discord.Interaction):
-            self.propaganda_config.propaganda_scheduler[
-                "poster_output_channel_id"] = interaction.channel_id
-            await interaction.response.send_message(
-                "Channel set for propaganda posters.")
-
-        @self.tree.command(
-            name="set_voice_channel",
-            description="Set the voice channel for music playback")
-        async def set_voice_channel(interaction: discord.Interaction):
-            if not interaction.user.voice:
-                await interaction.response.send_message(
-                    "You must be in a voice channel to set it!")
-                return
-            voice_channel_id = interaction.user.voice.channel.id
-            self.propaganda_config.voice_channel_id = voice_channel_id
-            self.propaganda_config.save_config()
-            await interaction.response.send_message(
-                f"Voice channel set to: {interaction.user.voice.channel.name}")
-
-        @self.tree.command(name="set_time",
-                           description="Set the time for daily posts (HH:MM)")
-        async def set_time(interaction: discord.Interaction, time: str):
-            try:
-                hour, minute = map(int, time.split(':'))
-                if 0 <= hour < 24 and 0 <= minute < 60:
-                    self.propaganda_config.propaganda_scheduler["time"][
-                        "hour"] = hour
-                    self.propaganda_config.propaganda_scheduler["time"][
-                        "minute"] = minute
-                    await interaction.response.send_message(
-                        f"Post time set to {time}")
-                else:
-                    await interaction.response.send_message(
-                        "Invalid time format. Use HH:MM (24-hour format)")
-            except ValueError:
-                await interaction.response.send_message(
-                    "Invalid time format. Use HH:MM (e.g., 15:30)")
-
-        @self.tree.command(name="set_timezone", description="Set the timezone")
-        async def set_timezone(interaction: discord.Interaction,
-                               timezone: str):
-            try:
-                pytz.timezone(timezone)
-                self.propaganda_config.timezone = timezone
-                self.propaganda_config.save_config()
-                setup_scheduler(self)
-                await interaction.response.send_message(
-                    f"Timezone set to: {timezone}")
-            except Exception:
-                await interaction.response.send_message(
-                    "Invalid timezone. Example: US/Eastern, Europe/London")
-
-        @self.tree.command(name="show_config",
-                           description="Show current configuration")
-        async def show_config(interaction: discord.Interaction):
-            config = self.propaganda_config
-            channel_mention = f"<#{config.propaganda_scheduler['poster_output_channel_id']}>" if config.propaganda_scheduler.get(
-                'poster_output_channel_id') else "Not set"
-
-            # Truncate text prompt if too long
-            text_prompt = config.text_prompt
-            if len(text_prompt) > 900:
-                text_prompt = text_prompt[:897] + "..."
-
-            embed = discord.Embed(title="Propaganda Poster Configuration",
-                                  color=discord.Color.blue())
-            embed.add_field(name="Channel", value=channel_mention, inline=True)
-            embed.add_field(
-                name="Post Time",
-                value=
-                f"{config.propaganda_scheduler['time']['hour']:02d}:{config.propaganda_scheduler['time']['minute']:02d} {config.propaganda_scheduler['timezone']}",
-                inline=True)
-            embed.add_field(name="Text Prompt",
-                            value=text_prompt,
-                            inline=False)
-
-            await interaction.response.send_message(embed=embed)
 
     async def on_ready(self):
         """Called when the bot is ready and connected to Discord."""
@@ -197,18 +65,12 @@ class PropagandaBot(commands.Bot):
     def add_listeners(self):
         """Add event listeners for logging command usage."""
 
-        async def on_message(self, message):
-            pass
-
         @self.tree.error
         async def on_app_command_error(interaction: discord.Interaction,
                                        error: app_commands.AppCommandError):
             """Log errors when processing slash commands."""
             logger.error(f"Error executing slash command: {error}",
                          exc_info=True)
-
-            # Create detailed user-friendly error messages
-            user_message = "An error occurred while processing your command."
 
             error_str = str(error).lower()
             if "invalid_request_error" in error_str or "openai.badrequest" in error_str:
@@ -252,17 +114,6 @@ class PropagandaBot(commands.Bot):
             kwargs = ' '.join([f"{k}='{v}'" for k, v in ctx.kwargs.items()])
             logger.info(f"Keyword arguments: {kwargs}")
 
-    async def add_commands(self):
-        """This method is deprecated - commands are now registered in setup_hook"""
-        pass
-
-    async def _handle_generate(self, channel, response_handler):
-        """Shared handler for generating propaganda poster."""
-        await response_handler(
-            "A True Piece is in the Making... Smoke a true cigarette in the meanwhile 🚬."
-        )
-        await self.generate_and_post_poster(channel)
-
     async def _handle_set_time(self, time_str, response_handler):
         """Shared handler for setting poster time."""
         try:
@@ -273,7 +124,7 @@ class PropagandaBot(commands.Bot):
                 self.propaganda_config.propaganda_scheduler["time"][
                     "minute"] = minute
                 await response_handler(
-                    f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.timezone}."
+                    f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.propaganda_scheduler['timezone']}."
                 )
             else:
                 await response_handler(
@@ -282,66 +133,3 @@ class PropagandaBot(commands.Bot):
             await response_handler(
                 "Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC)."
             )
-
-    async def generate_and_post_poster(self, channel=None):
-        """Generate a propaganda poster and post it to the specified channel."""
-        channel_id = self.propaganda_config.propaganda_scheduler.get(
-            "poster_output_channel_id")
-        if channel is None and channel_id:
-            channel = self.get_channel(channel_id)
-
-        if not channel:
-            logger.error("No channel set for posting propaganda poster")
-            return
-
-        try:
-            async with channel.typing():
-                # Get text and configuration from propaganda_config
-                text_prompt = self.propaganda_config.text_prompt
-
-                # Generate the poster text
-                poster_text = await generate_poster_text(text_prompt)
-                if not poster_text:
-                    raise ValueError("Failed to generate poster text")
-
-                # Generate the poster image using the text and configuration
-                image_url = await generate_poster_image(
-                    poster_text,
-                    max_retries=self.propaganda_config.max_retries)
-                if not image_url:
-                    raise ValueError("Failed to generate poster image")
-
-                # Create message with the poster
-                with open(image_url, 'rb') as f:
-                    file = discord.File(f, filename='propaganda_poster.png')
-                    await channel.send(
-                        file=file,
-                        content=f"**{self.propaganda_config.poster_caption}**")
-
-                # Clean up the temporary file
-                import os
-                try:
-                    os.remove(image_url)
-                except Exception as e:
-                    logger.warning(f"Failed to delete temporary file: {e}")
-                logger.info(
-                    f"Posted propaganda poster to channel {channel.name}")
-
-        except Exception as e:
-            error_msg = f"Error generating propaganda poster: {str(e)}"
-            logger.error(error_msg, exc_info=True)
-
-            # Create detailed error messages for poster generation
-            error_str = str(e).lower()
-            if "rate limit" in error_str or "429" in error_str:
-                user_message = "⌛ Rate limit reached. The bot will try again in a few minutes."
-            elif "api key" in error_str or "authentication" in error_str:
-                user_message = "🔑 API Key Error: Please check your WaveSpeed API token."
-            elif "timeout" in error_str:
-                user_message = "⏱️ Request timed out. The bot will try again shortly."
-            else:
-                # Log the unexpected error for debugging
-                logger.error(f"Unexpected error: {e}", exc_info=True)
-                user_message = f"❌ Error: {str(e)}\nPlease report this if the issue persists."
-
-            await channel.send(user_message)

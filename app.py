@@ -1,10 +1,12 @@
-from flask import Flask, render_template, jsonify
-import threading
-import os
-import logging
 import json
-from dotenv import load_dotenv
+import logging
+import os
+import threading
+
+from flask import Flask, render_template, jsonify
+
 from bot import PropagandaBot
+from discord_bot.commands import register_commands
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,32 +24,26 @@ bot_status = "Not started"
 def run_discord_bot():
     global bot_status, bot_instance
     try:
-        token = os.getenv('DISCORD_TOKEN')
-        if token:
-            bot_instance = PropagandaBot()
-            logger.info("Starting Discord propaganda poster bot...")
-            bot_status = "Running"
-            bot_instance.run(token)
-        else:
-            if not os.path.exists('tokens_config.json'):
-                logger.error(
-                    "tokens_config.json not found and DISCORD_TOKEN env var not set"
-                )
-                bot_status = "Error: No Discord token found"
-                return
+        if not os.path.exists('tokens_config.json'):
+            logger.error(
+                "tokens_config.json not found."
+            )
+            bot_status = "Error: No tokens found"
+            return
 
-            with open('tokens_config.json', 'r') as f:
-                tokens = json.load(f)
+        with open('tokens_config.json', 'r') as f:
+            tokens = json.load(f)
 
-            if not tokens.get('discord_token'):
-                logger.error("Discord token not found in config")
-                bot_status = "Error: Discord token not found in config"
-                return
+        if not tokens.get('discord_token'):
+            logger.error("Discord token not found in config")
+            bot_status = "Error: Discord token not found in config"
+            return
 
-            bot_instance = PropagandaBot()
-            logger.info("Starting Discord propaganda poster bot...")
-            bot_instance.run(tokens['discord_token'])
-            bot_status = "Running"
+        bot_instance = PropagandaBot()
+        register_commands(bot_instance)
+        logger.info("Starting Discord propaganda poster bot...")
+        bot_instance.run(tokens['discord_token'])
+        bot_status = "Running"
     except Exception as e:
         logger.error(f"Error running bot: {e}")
         bot_status = f"Error: {str(e)}"
