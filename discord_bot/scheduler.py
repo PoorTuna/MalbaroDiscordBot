@@ -1,11 +1,15 @@
-import logging
 import asyncio
+import logging
+from datetime import datetime
+
+import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime
-import pytz
+
+from discord_bot.content_generation.generate_poster import generate_and_post_poster
 
 logger = logging.getLogger(__name__)
+
 
 def setup_scheduler(bot):
     """
@@ -48,7 +52,7 @@ def setup_scheduler(bot):
         args=[bot],
         id='daily_content',
         replace_existing=True,
-        misfire_grace_time=60,  # Allow 60 seconds grace period
+        misfire_grace_time=600,  # Allow 10 minutes grace period
         coalesce=True,  # Only run once even if multiple executions are missed
         max_instances=1  # Ensure only one instance runs at a time
     )
@@ -56,6 +60,7 @@ def setup_scheduler(bot):
     # Start the scheduler
     scheduler.start()
     logger.info(f"Scheduled daily propaganda poster generation for {hour:02d}:{minute:02d} {timezone}")
+
 
 async def generate_daily_content(bot):
     """
@@ -80,11 +85,12 @@ async def generate_daily_content(bot):
 
     try:
         # Generate and post the propaganda poster
-        await bot.generate_and_post_poster(channel)
+        await generate_and_post_poster(bot, channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
 
         # Get voice channel and playlist URL from config
-        voice_channel = bot.get_channel(bot.propaganda_config.propaganda_scheduler["voice_channel_id"])
+        voice_channel_id = bot.propaganda_config.propaganda_scheduler["voice_channel_id"]
+        voice_channel = bot.get_channel(voice_channel_id)
         playlist_url = bot.propaganda_config.propaganda_scheduler["youtube_playlist_url"]
 
         if voice_channel and playlist_url:
@@ -118,6 +124,7 @@ async def generate_daily_content(bot):
         except:
             pass
 
+
 class MockInteraction:
     def __init__(self, text_channel, voice_channel):
         self.channel = text_channel
@@ -131,6 +138,7 @@ class MockInteraction:
         class VoiceState:
             def __init__(self, channel):
                 self.channel = channel
+
         return VoiceState(self._voice_channel)
 
     async def response(self):

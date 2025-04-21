@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 def load_tokens():
     """Load tokens from config file."""
     try:
-        with open('tokens_config.json', 'r') as f:
+        with open(r'..\..\..\tokens_config.json', 'r') as f:
             return json.load(f)
     except Exception as e:
         logger.error(f"Error loading tokens: {e}")
@@ -21,7 +21,7 @@ async def generate_poster_text(prompt):
     """Generate text for a propaganda poster."""
     return prompt.strip()
 
-async def generate_poster_image(text, theme="motivational", style="soviet propaganda poster style", max_retries=None):
+async def generate_poster_image(text: str, max_retries=None):
     """Generate a propaganda poster image using WaveSpeed API."""
     try:
         tokens = load_tokens()

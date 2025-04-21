@@ -7,9 +7,7 @@ A Discord bot that generates and posts propaganda-style images on a schedule, wi
 
 ### Required Software
 - Python 3.11 or higher
-- FFmpeg (for audio processing)
-- libffi
-- libsodium
+- FFmpeg (for audio processing) # make sure you have it in your "path"
 
 ### Dependencies
 All Python dependencies are listed in `requirements.txt`. Install them using:

@@ -3,8 +3,8 @@ import logging
 import pytz
 from discord import Interaction, Embed, Color
 
-from bot import PropagandaBot
-from scheduler import setup_scheduler
+from discord_bot.bot import PropagandaBot
+from discord_bot.scheduler import setup_scheduler
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +45,7 @@ def register_config_commands(bot: PropagandaBot):
                     "hour"] = hour
                 config.propaganda_scheduler["time"][
                     "minute"] = minute
+                bot.propaganda_config.save_config()
                 await interaction.response.send_message(
                     f"Post time set to {time}")
             else:

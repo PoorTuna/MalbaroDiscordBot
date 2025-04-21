@@ -1,7 +1,7 @@
 from discord import Interaction
 
-from bot import PropagandaBot
-from discord_bot.poster_generation.generate_poster import generate_and_post_poster
+from discord_bot.bot import PropagandaBot
+from discord_bot.content_generation.generate_poster import generate_and_post_poster
 
 
 def register_poster_generation_commands(bot: PropagandaBot):

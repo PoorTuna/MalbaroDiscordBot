@@ -2,12 +2,12 @@ from logging import getLogger
 
 from discord import File
 
-from image_generation import generate_poster_image, generate_poster_text
+from discord_bot.content_generation.generate_image import generate_poster_image, generate_poster_text
 
 logger = getLogger(__name__)
 
 
-async def generate_and_post_poster(bot, channel=None):
+async def generate_and_post_poster(bot, channel: str=None):
     """Generate a propaganda poster and post it to the specified channel."""
     channel_id = bot.propaganda_config.propaganda_scheduler.get(
         "poster_output_channel_id")

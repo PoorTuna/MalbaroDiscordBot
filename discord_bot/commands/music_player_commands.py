@@ -1,6 +1,6 @@
 from discord import Interaction
 
-from bot import PropagandaBot
+from discord_bot.bot import PropagandaBot
 from discord_bot.commands.config_commands import logger
 
 

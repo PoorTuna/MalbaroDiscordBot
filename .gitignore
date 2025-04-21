@@ -3,6 +3,17 @@
 **/tokens_config.json
 **/propaganda_config.json
 
+# AI Assistant Attached Assets
+**/attached_assets
+
+# ffmpeg and external binaries
+external/
+
+# Repl stuff
+.replit
+replit.nix
+pyproject.toml
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

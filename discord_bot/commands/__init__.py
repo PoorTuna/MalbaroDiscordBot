@@ -1,4 +1,4 @@
-from bot import PropagandaBot
+from discord_bot.bot import PropagandaBot
 
 
 def register_commands(bot: PropagandaBot):

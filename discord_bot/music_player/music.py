@@ -1,7 +1,11 @@
-import discord
-import yt_dlp
 import asyncio
 import random
+from logging import getLogger
+
+import discord
+import yt_dlp
+
+logger = getLogger(__name__)
 
 
 class MusicPlayer:
@@ -29,11 +33,12 @@ class MusicPlayer:
             if interaction:
                 await interaction.followup.send(
                     "Error: ffmpeg is not installed. Please contact the bot administrator.")
-            return
+            logger.warning("ffmpeg is not installed. Please contact the bot administrator.")
 
         try:
             # Determine the guild ID based on whether an interaction is provided
-            guild_id = interaction.guild.id if interaction else list(self.voice_clients.keys())[0] if self.voice_clients else None
+            guild_id = interaction.guild.id if interaction else list(self.voice_clients.keys())[
+                0] if self.voice_clients else None
             if guild_id is None:
                 if interaction:
                     await interaction.followup.send("Bot is not connected to any voice channel.")

@@ -1,5 +1,5 @@
-import asyncio
 import os
+from functools import cache
 from logging import getLogger
 
 import discord
@@ -7,7 +7,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from config import PropagandaConfig
-from scheduler import setup_scheduler
+from discord_bot.scheduler import setup_scheduler
 
 logger = getLogger(__name__)
 
@@ -15,16 +15,16 @@ logger = getLogger(__name__)
 class PropagandaBot(commands.Bot):
     """Discord bot for generating and posting propaganda posters."""
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Initialize the bot with required intents and configuration."""
         intents = discord.Intents.default()
         intents.message_content = True
         intents.voice_states = True
 
-        from music import MusicPlayer
+        from discord_bot.music_player.music import MusicPlayer
         self.music_player = MusicPlayer()
 
-        super().__init__(command_prefix="/", intents=intents)
+        super().__init__(*args, command_prefix="/", intents=intents, **kwargs)
 
         self.tree.clear_commands(guild=None)
         logger.info("Cleared all existing commands")
@@ -52,11 +52,6 @@ class PropagandaBot(commands.Bot):
         logger.info('------')
         # Set up the scheduled task for daily poster generation
         setup_scheduler(self)
-
-        # Start Steam monitoring
-        from steam_monitor import SteamMonitor
-        self.steam_monitor = SteamMonitor(self)
-        asyncio.create_task(self.steam_monitor.start())
 
     async def on_error(self, event, *args, **kwargs):
         """Handle any uncaught exceptions in the bot."""
@@ -92,44 +87,7 @@ class PropagandaBot(commands.Bot):
         # Set the error handler
         self.tree.on_error = on_app_command_error
 
-    async def on_app_command(self, interaction: discord.Interaction):
-        """Log when slash commands are used."""
-        command_name = interaction.command.name if interaction.command else "unknown"
-        logger.info(
-            f"Slash command '{command_name}' used by {interaction.user} in {interaction.channel}"
-        )
 
-    async def on_command(self, ctx):
-        """Log when regular commands are used."""
-        logger.info(
-            f"Regular command '{ctx.command}' used by {ctx.author} in {ctx.channel}"
-        )
-
-        # Log the command arguments if any
-        if ctx.args and len(ctx.args) > 1:  # First arg is the bot itself
-            args = ' '.join([str(a) for a in ctx.args[1:]])
-            logger.info(f"Arguments: {args}")
-
-        if ctx.kwargs:
-            kwargs = ' '.join([f"{k}='{v}'" for k, v in ctx.kwargs.items()])
-            logger.info(f"Keyword arguments: {kwargs}")
-
-    async def _handle_set_time(self, time_str, response_handler):
-        """Shared handler for setting poster time."""
-        try:
-            hour, minute = map(int, time_str.split(':'))
-            if 0 <= hour < 24 and 0 <= minute < 60:
-                self.propaganda_config.propaganda_scheduler["time"][
-                    "hour"] = hour
-                self.propaganda_config.propaganda_scheduler["time"][
-                    "minute"] = minute
-                await response_handler(
-                    f"Daily propaganda posters will be posted at {time_str} {self.propaganda_config.propaganda_scheduler['timezone']}."
-                )
-            else:
-                await response_handler(
-                    "Invalid time format. Please use HH:MM in 24-hour format.")
-        except ValueError:
-            await response_handler(
-                "Invalid time format. Please use HH:MM (e.g., 15:30 for 3:30 PM UTC)."
-            )
+@cache
+def get_propganda_bot(*args, **kwargs):
+    return PropagandaBot(*args, **kwargs)
