@@ -4,6 +4,8 @@ from logging import getLogger
 
 from aiohttp import ClientSession
 
+from steam_monitor.handle_cs2_monitor import handle_cs2_start
+
 logger = getLogger(__name__)
 
 
@@ -57,7 +59,7 @@ class SteamMonitor:
                                     logger.info(
                                         f"User {steam_id} started playing CS2!"
                                     )
-                                    await self.handle_cs2_start()
+                                    await handle_cs2_start(self)
                                 elif not is_playing_cs2 and was_playing_cs2:
                                     logger.info(
                                         f"User {steam_id} stopped playing CS2."
@@ -78,53 +80,6 @@ class SteamMonitor:
     async def stop(self):
         """Stop monitoring Steam profiles."""
         self.is_monitoring = False
-
-    async def handle_cs2_start(self):
-        """Handle when a user starts playing CS2."""
-        try:
-            voice_channel_id = self.propaganda_bot.propaganda_config.propaganda_scheduler[
-                "voice_channel_id"]
-            video_url = self.propaganda_bot.propaganda_config.propaganda_scheduler[
-                "cs2_alert_video_url"]
-
-            if voice_channel_id and video_url:
-                if voice_channel := self.propaganda_bot.get_channel(voice_channel_id):
-                    logger.info(
-                        f"Playing CS2 alert video in channel {voice_channel.name}"
-                    )
-                    # Connect to voice channel first
-                    voice_client = await voice_channel.connect()
-                    self.propaganda_bot.music_player.voice_clients[
-                        voice_channel.guild.id] = voice_client
-
-                    # Play the alert
-                    await self.propaganda_bot.music_player.join_and_play(
-                        None, video_url, force_voice_channel=True)
-
-                    # Cleanup after playing
-                    if voice_channel.guild.id in self.propaganda_bot.music_player.voice_clients:
-                        await self.propaganda_bot.music_player.voice_clients[
-                            voice_channel.guild.id].disconnect()
-                        del self.propaganda_bot.music_player.voice_clients[
-                            voice_channel.guild.id]
-                else:
-                    logger.warning(
-                        f"Could not find voice channel with ID {voice_channel_id}"
-                    )
-            else:
-                logger.warning(
-                    "Voice channel or CS2 alert video URL not configured")
-        except Exception as e:
-            logger.error(f"Error playing CS2 alert: {e}")
-            # Ensure cleanup on error
-            try:
-                if voice_channel and voice_channel.guild.id in self.propaganda_bot.music_player.voice_clients:
-                    await self.propaganda_bot.music_player.voice_clients[
-                        voice_channel.guild.id].disconnect()
-                    del self.propaganda_bot.music_player.voice_clients[
-                        voice_channel.guild.id]
-            except Exception as e:
-                logger.error(f"Error deleting voice client: {e}")
 
 
 @cache

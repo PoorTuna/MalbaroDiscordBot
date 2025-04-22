@@ -1,36 +1,20 @@
-import os
-from json import load
 from logging import getLogger
 
 from discord_bot.bot import PropagandaBot
 from discord_bot.commands import register_commands
 from discord_bot.models.bot_state import get_bot_state
+from discord_bot.models.token_config import TokenConfig
 
 logger = getLogger(__name__)
 
 bot_state = get_bot_state()
 
 
-def run_discord_bot(propaganda_bot: PropagandaBot) -> None:
+def run_discord_bot(propaganda_bot: PropagandaBot, token_config: TokenConfig) -> None:
     try:
-        if not os.path.exists('tokens_config.json'):
-            logger.error(
-                "tokens_config.json not found."
-            )
-            bot_state.status = "Error: No tokens found"
-            return
-
-        with open('tokens_config.json', 'r') as f:
-            tokens = load(f)
-
-        if not tokens.get('discord_token'):
-            logger.error("Discord token not found in config")
-            bot_state.status = "Error: Discord token not found in config"
-            return
-
-        register_commands(propaganda_bot)
+        register_commands(propaganda_bot, token_config.wavespeed_tokens)
         logger.info("Starting Discord propaganda poster bot...")
-        propaganda_bot.run(tokens['discord_token'])
+        propaganda_bot.run(token_config.discord_token)
         bot_state.status = "Running"
 
     except Exception as e:

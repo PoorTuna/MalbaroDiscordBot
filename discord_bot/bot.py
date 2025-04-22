@@ -1,22 +1,19 @@
-import os
-from functools import cache
 from logging import getLogger
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from config import PropagandaConfig
+from discord_bot.models.propaganda_config import PropagandaConfig
+from discord_bot.models.token_config import TokenConfig
 from discord_bot.scheduler import setup_scheduler
 
 logger = getLogger(__name__)
 
 
 class PropagandaBot(commands.Bot):
-    """Discord bot for generating and posting propaganda posters."""
 
-    def __init__(self, *args, **kwargs):
-        """Initialize the bot with required intents and configuration."""
+    def __init__(self, bot_config: PropagandaConfig, token_config: TokenConfig, *args, **kwargs):
         intents = discord.Intents.default()
         intents.message_content = True
         intents.voice_states = True
@@ -29,41 +26,32 @@ class PropagandaBot(commands.Bot):
         self.tree.clear_commands(guild=None)
         logger.info("Cleared all existing commands")
         # Store bot configuration
-        self.propaganda_config = PropagandaConfig()
-
-        # Load tokens from config file
-        tokens_config_dir = os.environ.get("TOKEN_CONFIG_DIR", '')
-        self.tokens_config_path = os.path.join(tokens_config_dir,
-                                               'tokens_config.json')
+        self.propaganda_config = bot_config
+        self.tokens_config = token_config
 
         # Add event listeners for logging
         self.add_listeners()
 
     async def setup_hook(self):
-        """Called when the bot is starting up."""
         synced_commands = await self.tree.sync()
         logger.info(
             f"{len(synced_commands)} Commands synced with Discord {synced_commands=}"
         )
 
     async def on_ready(self):
-        """Called when the bot is ready and connected to Discord."""
         logger.info(f'Logged in as {self.user.name} (ID: {self.user.id})')
         logger.info('------')
         # Set up the scheduled task for daily poster generation
-        setup_scheduler(self)
+        setup_scheduler(self, self.tokens_config.wavespeed_tokens)
 
     async def on_error(self, event, *args, **kwargs):
-        """Handle any uncaught exceptions in the bot."""
         logger.error(f'Error in event {event}', exc_info=True)
 
     def add_listeners(self):
-        """Add event listeners for logging command usage."""
 
         @self.tree.error
         async def on_app_command_error(interaction: discord.Interaction,
                                        error: app_commands.AppCommandError):
-            """Log errors when processing slash commands."""
             logger.error(f"Error executing slash command: {error}",
                          exc_info=True)
 
@@ -86,8 +74,3 @@ class PropagandaBot(commands.Bot):
 
         # Set the error handler
         self.tree.on_error = on_app_command_error
-
-
-@cache
-def get_propganda_bot(*args, **kwargs):
-    return PropagandaBot(*args, **kwargs)

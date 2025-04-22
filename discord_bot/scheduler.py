@@ -6,34 +6,29 @@ import pytz
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from discord_bot.content_generation.generate_poster import generate_and_post_poster
+from discord_bot.content_generation.generate_poster import generate_propaganda_poster
+from discord_bot.models.scheduler_state import get_scheduler_state
 
 logger = logging.getLogger(__name__)
 
 
-def setup_scheduler(bot):
-    """
-    Set up the scheduler for daily propaganda poster generation and music.
-
-    Args:
-        bot: The Discord bot instance
-    """
-    global current_scheduler
+def setup_scheduler(bot, api_tokens: list[str]):
+    current_scheduler_state = get_scheduler_state()
 
     # Shutdown existing scheduler if it exists
     try:
-        if hasattr(setup_scheduler, 'current_scheduler'):
-            setup_scheduler.current_scheduler.shutdown(wait=False)
+        if current_scheduler_state.current_scheduler:
+            current_scheduler_state.current_scheduler.shutdown(wait=False)
     except Exception as e:
         logger.error(f"Error shutting down existing scheduler: {e}")
 
     scheduler = AsyncIOScheduler()
-    setup_scheduler.current_scheduler = scheduler
+    current_scheduler_state.current_scheduler = scheduler
 
     # Get the configured time and timezone from the bot's propaganda_config
-    hour = bot.propaganda_config.propaganda_scheduler["time"]["hour"]
-    minute = bot.propaganda_config.propaganda_scheduler["time"]["minute"]
-    timezone = pytz.timezone(bot.propaganda_config.propaganda_scheduler["timezone"])
+    hour = bot.propaganda_config.propaganda_scheduler.time.hour
+    minute = bot.propaganda_config.propaganda_scheduler.time.minute
+    timezone = pytz.timezone(bot.propaganda_config.propaganda_scheduler.timezone)
 
     # Check if we missed today's run within last 5 minutes
     now = datetime.now(timezone)
@@ -42,14 +37,14 @@ def setup_scheduler(bot):
 
     if 0 <= time_diff.total_seconds() <= 300:  # Within 5 minutes after scheduled time
         logger.info("Missed recent schedule - running now")
-        asyncio.create_task(generate_daily_content(bot))
+        asyncio.create_task(generate_daily_content(bot, api_tokens))
 
     # Schedule the daily content generation task
     scheduler.configure(timezone=timezone)  # Set scheduler default timezone
     scheduler.add_job(
         generate_daily_content,
         CronTrigger(hour=hour, minute=minute, timezone=timezone),
-        args=[bot],
+        args=[bot, api_tokens],
         id='daily_content',
         replace_existing=True,
         misfire_grace_time=600,  # Allow 10 minutes grace period
@@ -62,18 +57,12 @@ def setup_scheduler(bot):
     logger.info(f"Scheduled daily propaganda poster generation for {hour:02d}:{minute:02d} {timezone}")
 
 
-async def generate_daily_content(bot):
-    """
-    Generate and post the daily propaganda poster and play music.
-
-    Args:
-        bot: The Discord bot instance
-    """
-    current_time = datetime.now(pytz.timezone(bot.propaganda_config.propaganda_scheduler["timezone"]))
+async def generate_daily_content(bot, api_tokens: list[str]):
+    current_time = datetime.now(pytz.timezone(bot.propaganda_config.propaganda_scheduler.timezone))
     logger.info(f"Scheduler triggered at {current_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
     logger.info("Generating daily propaganda poster and playing music")
 
-    channel_id = bot.propaganda_config.propaganda_scheduler.get("poster_output_channel_id")
+    channel_id = bot.propaganda_config.propaganda_scheduler.poster_output_channel_id
     if not channel_id:
         logger.warning("No channel configured for daily propaganda poster")
         return
@@ -85,13 +74,13 @@ async def generate_daily_content(bot):
 
     try:
         # Generate and post the propaganda poster
-        await generate_and_post_poster(bot, channel)
+        await generate_propaganda_poster(bot, api_tokens, channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
 
         # Get voice channel and playlist URL from config
-        voice_channel_id = bot.propaganda_config.propaganda_scheduler["voice_channel_id"]
+        voice_channel_id = bot.propaganda_config.propaganda_scheduler.voice_channel_id
         voice_channel = bot.get_channel(voice_channel_id)
-        playlist_url = bot.propaganda_config.propaganda_scheduler["youtube_playlist_url"]
+        playlist_url = bot.propaganda_config.propaganda_scheduler.youtube_playlist_url
 
         if voice_channel and playlist_url:
             try:
@@ -119,33 +108,4 @@ async def generate_daily_content(bot):
     except Exception as e:
         error_msg = f"Error in daily content generation: {e}"
         logger.error(error_msg, exc_info=True)
-        try:
-            await channel.send(f"⚠️ {error_msg}")
-        except:
-            pass
-
-
-class MockInteraction:
-    def __init__(self, text_channel, voice_channel):
-        self.channel = text_channel
-        self.guild = text_channel.guild
-        self.user = text_channel.guild.me
-        self.followup = text_channel
-        self._voice_channel = voice_channel
-
-    @property
-    def voice(self):
-        class VoiceState:
-            def __init__(self, channel):
-                self.channel = channel
-
-        return VoiceState(self._voice_channel)
-
-    async def response(self):
-        return self
-
-    async def send(self, *args, **kwargs):
-        await self.channel.send(*args, **kwargs)
-
-    async def defer(self):
-        pass
+        await channel.send(f"⚠️ {error_msg}")
