@@ -1,13 +1,13 @@
-import logging
 import os
 from functools import cache
 from json import dump
+from logging import getLogger
 from pathlib import Path
 
 from pydantic import Field, BaseModel
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, JsonConfigSettingsSource
 
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 class PropagandaSchedulerTimeConfig(BaseModel):

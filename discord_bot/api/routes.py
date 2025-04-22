@@ -5,7 +5,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 
 from discord_bot.api.app import templates, app
-from discord_bot.bot import PropagandaBot
+from discord_bot.propaganda_bot import PropagandaBot
 from discord_bot.models.bot_state import get_bot_state
 from discord_bot.models.propaganda_config import get_propaganda_config
 from discord_bot.models.token_config import get_token_config

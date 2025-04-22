@@ -1,6 +1,6 @@
 from logging import getLogger
 
-from discord_bot.bot import PropagandaBot
+from discord_bot.propaganda_bot import PropagandaBot
 from discord_bot.commands import register_commands
 from discord_bot.models.bot_state import get_bot_state
 from discord_bot.models.token_config import TokenConfig

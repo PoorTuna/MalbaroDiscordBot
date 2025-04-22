@@ -1,4 +1,4 @@
-from discord_bot.bot import PropagandaBot
+from discord_bot.propaganda_bot import PropagandaBot
 
 
 def register_commands(bot: PropagandaBot, api_tokens: list[str]):

@@ -5,7 +5,7 @@ from discord import Interaction, Embed, Color
 from pytz import UnknownTimeZoneError
 
 from discord_bot.models.propaganda_config import save_settings_to_file
-from discord_bot.bot import PropagandaBot
+from discord_bot.propaganda_bot import PropagandaBot
 from discord_bot.models.token_config import TokenConfig
 from discord_bot.scheduler import setup_scheduler
 
