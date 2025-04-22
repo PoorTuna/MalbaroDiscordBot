@@ -77,35 +77,38 @@ async def generate_daily_content(bot, api_tokens: list[str]):
         await generate_propaganda_poster(bot, api_tokens, channel)
         logger.info(f"Successfully posted daily propaganda poster to #{channel.name}")
 
-        # Get voice channel and playlist URL from config
+        # Join and play a random propaganda speech
         voice_channel_id = bot.propaganda_config.propaganda_scheduler.voice_channel_id
-        voice_channel = bot.get_channel(voice_channel_id)
         playlist_url = bot.propaganda_config.propaganda_scheduler.youtube_playlist_url
-
-        if voice_channel and playlist_url:
-            try:
-                # Connect to voice channel and wait for it to be ready
-                voice_client = await voice_channel.connect()
-                await asyncio.sleep(1)  # Wait for voice client to stabilize
-                bot.music_player.voice_clients[voice_channel.guild.id] = voice_client
-
-                # Play random song from playlist
-                await bot.music_player.join_and_play(None, playlist_url, force_voice_channel=True)
-                logger.info(f"Successfully started playing music in voice channel {voice_channel.name}")
-
-                # Disconnect after playing
-                if voice_channel.guild.id in bot.music_player.voice_clients:
-                    await bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
-                    del bot.music_player.voice_clients[voice_channel.guild.id]
-            except Exception as e:
-                logger.error(f"Error playing music: {e}")
-        else:
-            if not voice_channel:
-                logger.error(f"Could not find voice channel with ID {voice_channel_id}")
-            if not playlist_url:
-                logger.error("No playlist URL configured")
+        await play_random_propaganda_speech(bot, voice_channel_id, playlist_url)
 
     except Exception as e:
         error_msg = f"Error in daily content generation: {e}"
         logger.error(error_msg, exc_info=True)
         await channel.send(f"⚠️ {error_msg}")
+
+
+async def play_random_propaganda_speech(bot, voice_channel_id, playlist_url):
+    voice_channel = bot.get_channel(voice_channel_id)
+    if voice_channel and playlist_url:
+        try:
+            # Connect to voice channel and wait for it to be ready
+            voice_client = await voice_channel.connect()
+            await asyncio.sleep(2)  # Wait for voice client to stabilize
+            bot.music_player.voice_clients[voice_channel.guild.id] = voice_client
+
+            # Play random song from playlist
+            await bot.music_player.join_and_play(None, playlist_url, force_voice_channel=True)
+            logger.info(f"Successfully started playing music in voice channel {voice_channel.name}")
+
+            # Disconnect after playing
+            if voice_channel.guild.id in bot.music_player.voice_clients:
+                await bot.music_player.voice_clients[voice_channel.guild.id].disconnect()
+                del bot.music_player.voice_clients[voice_channel.guild.id]
+        except Exception as e:
+            logger.error(f"Error playing music: {e}")
+    else:
+        if not voice_channel:
+            logger.error(f"Could not find voice channel with ID {voice_channel_id}")
+        if not playlist_url:
+            logger.error("No playlist URL configured")
